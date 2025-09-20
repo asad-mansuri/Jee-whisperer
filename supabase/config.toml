@@ -1,1 +1,10 @@
 project_id = "xkubfrmsrlswsgybzjaj"
+
+[functions.chat]
+verify_jwt = true
+
+[functions.youtube-search]
+verify_jwt = true
+
+[functions.quiz-generator]
+verify_jwt = true
