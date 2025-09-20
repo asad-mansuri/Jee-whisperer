@@ -14,7 +14,358 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      activities: {
+        Row: {
+          activity_type: string | null
+          created_at: string | null
+          date: string | null
+          id: string
+          metadata: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          activity_type?: string | null
+          created_at?: string | null
+          date?: string | null
+          id?: string
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          activity_type?: string | null
+          created_at?: string | null
+          date?: string | null
+          id?: string
+          metadata?: Json | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activities_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          created_at: string | null
+          id: string
+          title: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          title?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          title?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leaderboard: {
+        Row: {
+          monthly_xp: number | null
+          rank_updated_at: string | null
+          total_xp: number | null
+          user_id: string
+          weekly_xp: number | null
+        }
+        Insert: {
+          monthly_xp?: number | null
+          rank_updated_at?: string | null
+          total_xp?: number | null
+          user_id: string
+          weekly_xp?: number | null
+        }
+        Update: {
+          monthly_xp?: number | null
+          rank_updated_at?: string | null
+          total_xp?: number | null
+          user_id?: string
+          weekly_xp?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leaderboard_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lecture_views: {
+        Row: {
+          created_at: string | null
+          id: string
+          total_duration: number | null
+          user_id: string | null
+          video_id: string
+          video_title: string | null
+          watched_seconds: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          total_duration?: number | null
+          user_id?: string | null
+          video_id: string
+          video_title?: string | null
+          watched_seconds?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          total_duration?: number | null
+          user_id?: string | null
+          video_id?: string
+          video_title?: string | null
+          watched_seconds?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lecture_views_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          attachments: Json | null
+          content: string
+          conversation_id: string | null
+          created_at: string | null
+          id: string
+          sender: string | null
+        }
+        Insert: {
+          attachments?: Json | null
+          content: string
+          conversation_id?: string | null
+          created_at?: string | null
+          id?: string
+          sender?: string | null
+        }
+        Update: {
+          attachments?: Json | null
+          content?: string
+          conversation_id?: string | null
+          created_at?: string | null
+          id?: string
+          sender?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          class: string | null
+          created_at: string | null
+          display_name: string | null
+          id: string
+          section: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          class?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          id: string
+          section?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          class?: string | null
+          created_at?: string | null
+          display_name?: string | null
+          id?: string
+          section?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      quiz_results: {
+        Row: {
+          created_at: string | null
+          difficulty: string | null
+          id: string
+          score: number
+          topic: string | null
+          total_questions: number
+          user_id: string | null
+          xp_earned: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          difficulty?: string | null
+          id?: string
+          score: number
+          topic?: string | null
+          total_questions: number
+          user_id?: string | null
+          xp_earned?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          difficulty?: string | null
+          id?: string
+          score?: number
+          topic?: string | null
+          total_questions?: number
+          user_id?: string | null
+          xp_earned?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_results_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      simulation_launches: {
+        Row: {
+          id: string
+          launched_at: string | null
+          simulation_id: string
+          simulation_name: string | null
+          user_id: string | null
+        }
+        Insert: {
+          id?: string
+          launched_at?: string | null
+          simulation_id: string
+          simulation_name?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          id?: string
+          launched_at?: string | null
+          simulation_id?: string
+          simulation_name?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "simulation_launches_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_conversations: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          is_global: boolean | null
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_global?: boolean | null
+          name?: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_global?: boolean | null
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_conversations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_messages: {
+        Row: {
+          attachments: Json | null
+          content: string
+          conversation_id: string | null
+          created_at: string | null
+          id: string
+          sender_id: string | null
+        }
+        Insert: {
+          attachments?: Json | null
+          content: string
+          conversation_id?: string | null
+          created_at?: string | null
+          id?: string
+          sender_id?: string | null
+        }
+        Update: {
+          attachments?: Json | null
+          content?: string
+          conversation_id?: string | null
+          created_at?: string | null
+          id?: string
+          sender_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "student_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
