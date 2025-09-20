@@ -33,20 +33,31 @@ export const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
         : await signUp(formData.email, formData.password, formData.displayName);
 
       if (error) {
-        toast({
-          title: 'Error',
-          description: error.message,
-          variant: 'destructive',
-        });
+        // Handle specific email confirmation error
+        if (error.message?.includes('Email not confirmed')) {
+          toast({
+            title: 'Email Confirmation Required',
+            description: 'Please check your email and click the confirmation link before signing in.',
+            variant: 'destructive',
+          });
+        } else {
+          toast({
+            title: 'Error',
+            description: error.message,
+            variant: 'destructive',
+          });
+        }
       } else {
         toast({
           title: mode === 'signin' ? 'Welcome back!' : 'Account created!',
           description: mode === 'signin' 
             ? 'Successfully signed in.' 
-            : 'Please check your email to verify your account.',
+            : 'Please check your email and click the confirmation link to verify your account.',
         });
-        onOpenChange(false);
-        setFormData({ email: '', password: '', displayName: '' });
+        if (mode === 'signin') {
+          onOpenChange(false);
+          setFormData({ email: '', password: '', displayName: '' });
+        }
       }
     } catch (error) {
       toast({
