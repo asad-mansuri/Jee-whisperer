@@ -71,6 +71,19 @@ const AppRoutes = () => {
           </PublicRoute>
         }
       />
+      
+      {/* Auth callback route - handles email confirmation */}
+      <Route
+        path="/auth/callback"
+        element={
+          <div className="min-h-screen flex items-center justify-center bg-gradient-hero">
+            <div className="flex items-center gap-3">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <span className="text-lg font-medium text-foreground">Completing sign in...</span>
+            </div>
+          </div>
+        }
+      />
 
       {/* Protected Routes */}
       <Route
