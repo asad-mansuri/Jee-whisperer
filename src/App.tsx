@@ -11,6 +11,7 @@ import { Loader2 } from "lucide-react";
 import Welcome from "./pages/Welcome";
 import Dashboard from "./pages/Dashboard";
 import Chat from "./pages/Chat";
+import Notes from "./pages/Notes";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -145,10 +146,7 @@ const AppRoutes = () => {
         path="/notes"
         element={
           <ProtectedRoute>
-            <div className="p-6">
-              <h1 className="text-2xl font-bold">Notes</h1>
-              <p className="text-muted-foreground">Coming soon...</p>
-            </div>
+            <Notes />
           </ProtectedRoute>
         }
       />
