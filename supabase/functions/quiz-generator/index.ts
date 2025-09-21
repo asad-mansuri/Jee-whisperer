@@ -94,7 +94,7 @@ serve(async (req) => {
           .replace(/&ndash;/g, '–')
           .replace(/&mdash;/g, '—')
           .replace(/&hellip;/g, '…')
-          .replace(/&rsquo;/g, ''')
+          .replace(/&rsquo;/g, "'")
           .replace(/&ldquo;/g, '"')
           .replace(/&rdquo;/g, '"');
       };
