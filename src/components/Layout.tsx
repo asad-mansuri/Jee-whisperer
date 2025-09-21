@@ -5,16 +5,17 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { LogOut, Bell } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-
 interface LayoutProps {
   children: ReactNode;
 }
-
-export const Layout = ({ children }: LayoutProps) => {
-  const { user, signOut } = useAuth();
-
-  return (
-    <SidebarProvider>
+export const Layout = ({
+  children
+}: LayoutProps) => {
+  const {
+    user,
+    signOut
+  } = useAuth();
+  return <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gradient-hero">
         <AppSidebar />
         
@@ -29,9 +30,7 @@ export const Layout = ({ children }: LayoutProps) => {
             </div>
 
             <div className="flex items-center gap-3">
-              <Button variant="ghost" size="sm" className="hover-lift">
-                <Bell className="h-4 w-4" />
-              </Button>
+              
               
               <div className="flex items-center gap-2">
                 <Avatar className="h-8 w-8">
@@ -42,12 +41,7 @@ export const Layout = ({ children }: LayoutProps) => {
                 </Avatar>
               </div>
 
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={signOut}
-                className="hover-lift"
-              >
+              <Button variant="ghost" size="sm" onClick={signOut} className="hover-lift">
                 <LogOut className="h-4 w-4" />
               </Button>
             </div>
@@ -59,6 +53,5 @@ export const Layout = ({ children }: LayoutProps) => {
           </main>
         </div>
       </div>
-    </SidebarProvider>
-  );
+    </SidebarProvider>;
 };
