@@ -54,7 +54,11 @@ export function AppSidebar() {
       : 'hover:bg-accent hover:text-accent-foreground';
 
   return (
-    <Sidebar className={isCollapsed ? 'w-14' : 'w-64'} collapsible="icon">
+    <Sidebar 
+      className={isCollapsed ? 'w-14' : 'w-64'} 
+      collapsible="icon"
+      variant="sidebar"
+    >
       <SidebarContent className="bg-gradient-card">
         {/* Logo/Brand */}
         <div className="p-4 border-b border-border">

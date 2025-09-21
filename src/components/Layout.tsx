@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/AppSidebar';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,16 +15,31 @@ export const Layout = ({
     user,
     signOut
   } = useAuth();
-  return <SidebarProvider>
+  
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
+  return <SidebarProvider defaultOpen={!isMobile}>
       <div className="min-h-screen flex w-full bg-gradient-hero">
         <AppSidebar />
         
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-w-0">
           {/* Header */}
           <header className="h-16 flex items-center justify-between px-4 bg-background/95 backdrop-blur-sm border-b border-border shadow-sm">
-            <div className="flex items-center gap-4">
-              <SidebarTrigger className="hover:bg-accent hover:text-accent-foreground" />
-              <h2 className="font-semibold text-lg text-foreground">
+            <div className="flex items-center gap-2 md:gap-4 min-w-0">
+              {/* Burger menu only visible on mobile */}
+              <SidebarTrigger className="md:hidden hover:bg-accent hover:text-accent-foreground" />
+              <h2 className="font-semibold text-sm md:text-lg text-foreground truncate">
                 Welcome back, {user?.user_metadata?.display_name || user?.email?.split('@')[0] || 'Student'}!
               </h2>
             </div>
@@ -48,7 +63,7 @@ export const Layout = ({
           </header>
 
           {/* Main Content */}
-          <main className="flex-1 p-6">
+          <main className="flex-1 p-3 md:p-6 overflow-auto">
             {children}
           </main>
         </div>
