@@ -12,6 +12,8 @@ import Welcome from "./pages/Welcome";
 import Dashboard from "./pages/Dashboard";
 import Chat from "./pages/Chat";
 import Notes from "./pages/Notes";
+import Quiz from "./pages/Quiz";
+import Leaderboard from "./pages/Leaderboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -110,10 +112,7 @@ const AppRoutes = () => {
         path="/quizzes"
         element={
           <ProtectedRoute>
-            <div className="p-6">
-              <h1 className="text-2xl font-bold">Quizzes</h1>
-              <p className="text-muted-foreground">Coming soon...</p>
-            </div>
+            <Quiz />
           </ProtectedRoute>
         }
       />
@@ -155,10 +154,7 @@ const AppRoutes = () => {
         path="/leaderboard"
         element={
           <ProtectedRoute>
-            <div className="p-6">
-              <h1 className="text-2xl font-bold">Leaderboard</h1>
-              <p className="text-muted-foreground">Coming soon...</p>
-            </div>
+            <Leaderboard />
           </ProtectedRoute>
         }
       />
