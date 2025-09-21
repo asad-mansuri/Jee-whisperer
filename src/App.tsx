@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import { Layout } from "@/components/Layout";
 import { Loader2 } from "lucide-react";
 
@@ -15,6 +16,7 @@ import Notes from "./pages/Notes";
 import Quiz from "./pages/Quiz";
 import Leaderboard from "./pages/Leaderboard";
 import StudentChat from "./pages/StudentChat";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -173,10 +175,7 @@ const AppRoutes = () => {
         path="/profile"
         element={
           <ProtectedRoute>
-            <div className="p-6">
-              <h1 className="text-2xl font-bold">Profile</h1>
-              <p className="text-muted-foreground">Coming soon...</p>
-            </div>
+            <Profile />
           </ProtectedRoute>
         }
       />
@@ -190,13 +189,20 @@ const AppRoutes = () => {
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AppRoutes />
-        </BrowserRouter>
-      </TooltipProvider>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+        </TooltipProvider>
+      </ThemeProvider>
     </AuthProvider>
   </QueryClientProvider>
 );
