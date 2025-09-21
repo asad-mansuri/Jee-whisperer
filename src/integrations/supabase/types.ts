@@ -371,7 +371,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      reset_monthly_xp: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      reset_weekly_xp: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
