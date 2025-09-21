@@ -132,9 +132,7 @@ const Welcome = () => {
             </div>
             <span className="text-xl font-bold text-foreground">Smart AI Tutor</span>
           </div>
-          <p className="text-muted-foreground">
-            Empowering Class 10 students to excel in Science • Made with ❤️ for learning
-          </p>
+          <p className="text-muted-foreground">Empowering Class 10 students to excel in Science • Made wBy Code Storm for learning</p>
         </div>
       </footer>
 
