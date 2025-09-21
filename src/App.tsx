@@ -14,6 +14,7 @@ import Chat from "./pages/Chat";
 import Notes from "./pages/Notes";
 import Quiz from "./pages/Quiz";
 import Leaderboard from "./pages/Leaderboard";
+import StudentChat from "./pages/StudentChat";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -163,10 +164,7 @@ const AppRoutes = () => {
         path="/student-chat"
         element={
           <ProtectedRoute>
-            <div className="p-6">
-              <h1 className="text-2xl font-bold">Student Chat</h1>
-              <p className="text-muted-foreground">Coming soon...</p>
-            </div>
+            <StudentChat />
           </ProtectedRoute>
         }
       />

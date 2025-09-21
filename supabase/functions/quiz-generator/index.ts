@@ -82,11 +82,21 @@ serve(async (req) => {
 
     // Transform the questions to our format
     const transformedQuestions = data.results?.map((question: any, index: number) => {
-      // Decode HTML entities
+      // Decode HTML entities (server-side compatible)
       const decodeHtml = (text: string) => {
-        const txt = document.createElement('textarea');
-        txt.innerHTML = text;
-        return txt.value;
+        return text
+          .replace(/&quot;/g, '"')
+          .replace(/&#039;/g, "'")
+          .replace(/&amp;/g, '&')
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&nbsp;/g, ' ')
+          .replace(/&ndash;/g, '–')
+          .replace(/&mdash;/g, '—')
+          .replace(/&hellip;/g, '…')
+          .replace(/&rsquo;/g, ''')
+          .replace(/&ldquo;/g, '"')
+          .replace(/&rdquo;/g, '"');
       };
 
       const correctAnswer = decodeHtml(question.correct_answer);
