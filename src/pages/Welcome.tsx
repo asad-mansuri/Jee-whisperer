@@ -48,10 +48,7 @@ const Welcome = () => {
       <section className="container mx-auto px-6 py-20 text-center">
         <div className="max-w-4xl mx-auto animate-fade-in">
           <div className="mb-8">
-            <div className="inline-flex items-center gap-2 bg-accent/20 text-accent-foreground px-4 py-2 rounded-full text-sm font-medium mb-6">
-              <Trophy className="h-4 w-4" />
-              Join 10,000+ students already learning
-            </div>
+            
             
             <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
               Learn Class 10 Science
@@ -132,9 +129,7 @@ const Welcome = () => {
             </div>
             <span className="text-xl font-bold text-foreground">Smart AI Tutor</span>
           </div>
-          <p className="text-muted-foreground">
-            Empowering Class 10 students to excel in Science • Made with ❤️ for learning
-          </p>
+          <p className="text-muted-foreground">Empowering Class 10 students to excel in Science • Made by CODESTORM for learning</p>
         </div>
       </footer>
 
