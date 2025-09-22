@@ -40,20 +40,6 @@ export const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
             description: 'Please check your email and click the confirmation link before signing in.',
             variant: 'destructive',
           });
-        } else if (error.message?.includes('Invalid login credentials')) {
-          if (mode === 'signin') {
-            toast({
-              title: 'Invalid Credentials',
-              description: 'Please check your email and password and try again. Make sure you have confirmed your email address.',
-              variant: 'destructive',
-            });
-          } else {
-            toast({
-              title: 'Sign Up Failed',
-              description: 'Please check that your email is valid and your password is at least 6 characters long. This email may already be registered.',
-              variant: 'destructive',
-            });
-          }
         } else {
           toast({
             title: 'Error',
