@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+// import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { 
@@ -28,14 +28,14 @@ interface PersonalMessage {
   created_at: string;
   sender_profile?: {
     display_name: string;
-    avatar_url: string;
+  // avatar_url removed
   };
 }
 
 interface ChatUser {
   id: string;
   display_name: string;
-  avatar_url: string;
+  // avatar_url removed
   class: string;
   section: string;
   last_message?: {
@@ -103,7 +103,7 @@ const PersonalChat = () => {
           profiles!leaderboard_user_id_profiles_id_fkey(
             id,
             display_name,
-            avatar_url,
+            // avatar_url removed
             class,
             section
           )
@@ -115,7 +115,6 @@ const PersonalChat = () => {
       const users = data?.map(entry => ({
         id: entry.user_id,
         display_name: entry.profiles?.display_name || 'Unknown User',
-        avatar_url: entry.profiles?.avatar_url || '',
         class: entry.profiles?.class || '10',
         section: entry.profiles?.section || '',
       })) || [];
@@ -137,7 +136,7 @@ const PersonalChat = () => {
         .from('personal_messages')
         .select(`
           *,
-          sender_profile:profiles!personal_messages_sender_id_profiles_id_fkey(display_name, avatar_url)
+          sender_profile:profiles!personal_messages_sender_id_profiles_id_fkey(display_name)
         `)
         .or(`and(sender_id.eq.${user?.id},receiver_id.eq.${otherUserId}),and(sender_id.eq.${otherUserId},receiver_id.eq.${user?.id})`)
         .order('created_at', { ascending: true });
@@ -229,12 +228,9 @@ const PersonalChat = () => {
                 onClick={() => setSelectedChat(chatUser.id)}
               >
                 <div className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={chatUser.avatar_url} />
-                    <AvatarFallback className="bg-primary/10">
-                      {chatUser.display_name?.charAt(0) || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-lg">
+                    {chatUser.display_name?.charAt(0) || 'U'}
+                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <p className="font-medium text-sm truncate">
@@ -270,12 +266,9 @@ const PersonalChat = () => {
             <div className="p-4 border-b border-border bg-muted/20">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={selectedUser.avatar_url} />
-                    <AvatarFallback className="bg-primary/10">
-                      {selectedUser.display_name?.charAt(0) || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-lg">
+                    {selectedUser.display_name?.charAt(0) || 'U'}
+                  </div>
                   <div>
                     <h3 className="font-semibold">{selectedUser.display_name}</h3>
                     <p className="text-sm text-muted-foreground">

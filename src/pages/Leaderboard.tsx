@@ -12,12 +12,11 @@ interface LeaderboardEntry {
   total_xp: number;
   weekly_xp: number;
   monthly_xp: number;
-  profiles: {
-    display_name: string | null;
-    avatar_url: string | null;
-    class: string | null;
-    section: string | null;
-  } | null;
+  rank: number;
+  display_name: string | null;
+  avatar_url: string | null;
+  class: string | null;
+  section: string | null;
 }
 
 interface UserStats {
@@ -43,21 +42,16 @@ export default function Leaderboard() {
 
   const fetchLeaderboardData = async () => {
     try {
+      const viewName = activeTab === 'total'
+        ? 'leaderboard_ranked_total'
+        : activeTab === 'weekly'
+        ? 'leaderboard_ranked_weekly'
+        : 'leaderboard_ranked_monthly';
+
       const { data, error } = await supabase
-        .from('leaderboard')
-        .select(`
-          user_id,
-          total_xp,
-          weekly_xp,
-          monthly_xp,
-          profiles (
-            display_name,
-            avatar_url,
-            class,
-            section
-          )
-        `)
-        .order(activeTab === 'total' ? 'total_xp' : activeTab === 'weekly' ? 'weekly_xp' : 'monthly_xp', { ascending: false })
+        .from(viewName)
+        .select(`user_id,total_xp,weekly_xp,monthly_xp,rank,display_name,avatar_url,class,section`)
+        .order('rank', { ascending: true })
         .limit(50);
 
       if (error) throw error;
@@ -159,7 +153,7 @@ export default function Leaderboard() {
     }
   };
 
-  const currentUserRank = leaderboardData.findIndex(entry => entry.user_id === user?.id) + 1;
+  const currentUserRank = leaderboardData.find((entry) => entry.user_id === user?.id)?.rank || null;
 
   if (loading) {
     return (
@@ -194,7 +188,7 @@ export default function Leaderboard() {
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-primary">{currentUserRank || '--'}</div>
+                  <div className="text-2xl font-bold text-primary">{currentUserRank ?? '--'}</div>
                   <div className="text-sm text-muted-foreground">Rank</div>
                 </div>
                 <div className="text-center">
@@ -251,13 +245,13 @@ export default function Leaderboard() {
                             2nd
                           </div>
                           <Avatar className="h-12 w-12 mx-auto mb-2">
-                            <AvatarImage src={leaderboardData[1]?.profiles?.avatar_url || ''} />
+                            <AvatarImage src={leaderboardData[1]?.avatar_url || ''} />
                             <AvatarFallback>
-                              {leaderboardData[1]?.profiles?.display_name?.charAt(0) || '?'}
+                              {leaderboardData[1]?.display_name?.charAt(0) || '?'}
                             </AvatarFallback>
                           </Avatar>
                           <div className="font-semibold text-sm">
-                            {leaderboardData[1]?.profiles?.display_name || 'Anonymous'}
+                            {leaderboardData[1]?.display_name || 'Anonymous'}
                           </div>
                           <div className="text-xs text-muted-foreground">
                             {getXPForTab(leaderboardData[1])} XP
@@ -270,13 +264,13 @@ export default function Leaderboard() {
                             1st
                           </div>
                           <Avatar className="h-16 w-16 mx-auto mb-2">
-                            <AvatarImage src={leaderboardData[0]?.profiles?.avatar_url || ''} />
+                            <AvatarImage src={leaderboardData[0]?.avatar_url || ''} />
                             <AvatarFallback>
-                              {leaderboardData[0]?.profiles?.display_name?.charAt(0) || '?'}
+                              {leaderboardData[0]?.display_name?.charAt(0) || '?'}
                             </AvatarFallback>
                           </Avatar>
                           <div className="font-semibold">
-                            {leaderboardData[0]?.profiles?.display_name || 'Anonymous'}
+                            {leaderboardData[0]?.display_name || 'Anonymous'}
                           </div>
                           <div className="text-sm text-muted-foreground">
                             {getXPForTab(leaderboardData[0])} XP
@@ -289,13 +283,13 @@ export default function Leaderboard() {
                             3rd
                           </div>
                           <Avatar className="h-12 w-12 mx-auto mb-2">
-                            <AvatarImage src={leaderboardData[2]?.profiles?.avatar_url || ''} />
+                            <AvatarImage src={leaderboardData[2]?.avatar_url || ''} />
                             <AvatarFallback>
-                              {leaderboardData[2]?.profiles?.display_name?.charAt(0) || '?'}
+                              {leaderboardData[2]?.display_name?.charAt(0) || '?'}
                             </AvatarFallback>
                           </Avatar>
                           <div className="font-semibold text-sm">
-                            {leaderboardData[2]?.profiles?.display_name || 'Anonymous'}
+                            {leaderboardData[2]?.display_name || 'Anonymous'}
                           </div>
                           <div className="text-xs text-muted-foreground">
                             {getXPForTab(leaderboardData[2])} XP
@@ -335,22 +329,22 @@ export default function Leaderboard() {
                           </div>
 
                           <Avatar className="h-10 w-10">
-                            <AvatarImage src={entry.profiles?.avatar_url || ''} />
+                            <AvatarImage src={entry.avatar_url || ''} />
                             <AvatarFallback>
-                              {entry.profiles?.display_name?.charAt(0) || '?'}
+                              {entry.display_name?.charAt(0) || '?'}
                             </AvatarFallback>
                           </Avatar>
 
                           <div className="flex-1">
                             <div className="font-semibold">
-                              {entry.profiles?.display_name || 'Anonymous'}
+                              {entry.display_name || 'Anonymous'}
                               {entry.user_id === user?.id && (
                                 <Badge variant="secondary" className="ml-2">You</Badge>
                               )}
                             </div>
-                            {entry.profiles?.class && entry.profiles?.section && (
+                            {entry.class && entry.section && (
                               <div className="text-sm text-muted-foreground">
-                                Class {entry.profiles.class} - Section {entry.profiles.section}
+                                Class {entry.class} - Section {entry.section}
                               </div>
                             )}
                           </div>

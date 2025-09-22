@@ -6,13 +6,21 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Map science topics to Open Trivia DB categories
+// Map topics to Open Trivia DB categories
+// 17 = Science & Nature, 19 = Mathematics
 const topicCategoryMap: { [key: string]: number } = {
-  'general': 17, // Science & Nature
+  // Science
+  'general': 17,
+  'science': 17,
   'physics': 17,
   'chemistry': 17,
   'biology': 17,
   'nature': 17,
+  // Math
+  'math': 19,
+  'algebra': 19,
+  'geometry': 19,
+  'statistics': 19,
 };
 
 serve(async (req) => {
@@ -42,19 +50,41 @@ serve(async (req) => {
       });
     }
 
-    const url = new URL(req.url);
-    const topic = url.searchParams.get('topic') || 'general';
-    const difficulty = url.searchParams.get('difficulty') || 'medium';
-    const amount = parseInt(url.searchParams.get('amount') || '10');
+    // Prefer JSON body if provided; fallback to query params for backward compatibility
+    let topic = 'general';
+    let difficulty = 'medium';
+    let amount = 10;
 
-    // Get category ID for the topic
-    const categoryId = topicCategoryMap[topic.toLowerCase()] || 17;
+    try {
+      if (req.method === 'POST' || req.method === 'PUT') {
+        const body = await req.json().catch(() => null);
+        if (body) {
+          topic = (body.topic || topic).toString();
+          difficulty = (body.difficulty || difficulty).toString();
+          amount = parseInt((body.amount ?? amount).toString());
+        }
+      }
+    } catch (_) {
+      // ignore body parse errors and fallback to query params
+    }
+
+    if (!topic || !difficulty || !amount) {
+      const url = new URL(req.url);
+      topic = url.searchParams.get('topic') || topic;
+      difficulty = url.searchParams.get('difficulty') || difficulty;
+      amount = parseInt(url.searchParams.get('amount') || amount.toString());
+    }
+
+    // Get category ID for the topic (default to Science)
+    const categoryId = topicCategoryMap[topic.toLowerCase()] || (topic.toLowerCase().includes('math') ? 19 : 17);
 
     // Build Open Trivia DB URL
     const triviaUrl = new URL('https://opentdb.com/api.php');
     triviaUrl.searchParams.set('amount', amount.toString());
     triviaUrl.searchParams.set('category', categoryId.toString());
-    triviaUrl.searchParams.set('difficulty', difficulty);
+    if (['easy','medium','hard'].includes(difficulty)) {
+      triviaUrl.searchParams.set('difficulty', difficulty);
+    }
     triviaUrl.searchParams.set('type', 'multiple');
 
     console.log('Fetching quiz from:', triviaUrl.toString());
@@ -81,24 +111,30 @@ serve(async (req) => {
     }
 
     // Transform the questions to our format
-    const transformedQuestions = data.results?.map((question: any, index: number) => {
-      // Decode HTML entities (server-side compatible)
-      const decodeHtml = (text: string) => {
-        return text
-          .replace(/&quot;/g, '"')
-          .replace(/&#039;/g, "'")
-          .replace(/&amp;/g, '&')
-          .replace(/&lt;/g, '<')
-          .replace(/&gt;/g, '>')
-          .replace(/&nbsp;/g, ' ')
-          .replace(/&ndash;/g, '–')
-          .replace(/&mdash;/g, '—')
-          .replace(/&hellip;/g, '…')
-          .replace(/&rsquo;/g, "'")
-          .replace(/&ldquo;/g, '"')
-          .replace(/&rdquo;/g, '"');
+    const decodeHtml = (text: string): string => {
+      if (!text) return '';
+      // Basic named entities
+      const entities: Record<string, string> = {
+        '&amp;': '&',
+        '&lt;': '<',
+        '&gt;': '>',
+        '&quot;': '"',
+        '&#039;': "'",
+        '&apos;': "'",
+        '&ldquo;': '"',
+        '&rdquo;': '"',
+        '&lsquo;': "'",
+        '&rsquo;': "'",
+        '&nbsp;': ' ',
       };
+      let decoded = text.replace(/(&amp;|&lt;|&gt;|&quot;|&#039;|&apos;|&ldquo;|&rdquo;|&lsquo;|&rsquo;|&nbsp;)/g, (m) => entities[m] || m);
+      // Numeric entities (decimal and hex)
+      decoded = decoded.replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(parseInt(dec, 10)));
+      decoded = decoded.replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => String.fromCharCode(parseInt(hex, 16)));
+      return decoded;
+    };
 
+    const transformedQuestions = data.results?.map((question: any, index: number) => {
       const correctAnswer = decodeHtml(question.correct_answer);
       const incorrectAnswers = question.incorrect_answers.map((answer: string) => decodeHtml(answer));
       

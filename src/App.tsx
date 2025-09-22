@@ -15,7 +15,7 @@ import Chat from "./pages/Chat";
 import Notes from "./pages/Notes";
 import Quiz from "./pages/Quiz";
 import Leaderboard from "./pages/Leaderboard";
-import StudentChat from "./pages/StudentChat";
+import DirectChat from "./pages/DirectChat";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
@@ -166,7 +166,7 @@ const AppRoutes = () => {
         path="/student-chat"
         element={
           <ProtectedRoute>
-            <StudentChat />
+            <DirectChat />
           </ProtectedRoute>
         }
       />

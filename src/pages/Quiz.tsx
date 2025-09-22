@@ -122,8 +122,8 @@ export default function Quiz() {
     });
 
     const finalScore = Math.round((correctAnswers / quizData.questions.length) * 100);
-    const difficultyMultiplier = DIFFICULTIES.find(d => d.id === selectedDifficulty)?.xp || 15;
-    const earnedXP = Math.round((finalScore / 100) * difficultyMultiplier * quizData.questions.length);
+    const xpPerQuestion = DIFFICULTIES.find(d => d.id === selectedDifficulty)?.xp || 15;
+    const earnedXP = correctAnswers * xpPerQuestion;
 
     setScore(finalScore);
     setXpEarned(earnedXP);
@@ -142,27 +142,7 @@ export default function Quiz() {
 
       if (quizError) throw quizError;
 
-      // Update leaderboard
-      const { data: userData } = await supabase.auth.getUser();
-      if (userData.user) {
-        // Update leaderboard directly
-        const { data: currentData } = await supabase
-          .from('leaderboard')
-          .select('total_xp, weekly_xp, monthly_xp')
-          .eq('user_id', userData.user.id)
-          .single();
-
-        if (currentData) {
-          await supabase
-            .from('leaderboard')
-            .update({
-              total_xp: (currentData.total_xp || 0) + earnedXP,
-              weekly_xp: (currentData.weekly_xp || 0) + earnedXP,
-              monthly_xp: (currentData.monthly_xp || 0) + earnedXP,
-            })
-            .eq('user_id', userData.user.id);
-        }
-      }
+      // Leaderboard is updated via DB trigger on quiz_results insert
 
       toast({
         title: 'Quiz Completed!',

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
 import {
   Dialog,
   DialogContent,
@@ -518,12 +518,6 @@ export default function StudentChat() {
                     </div>
                     
                     <div className="flex items-center gap-2 mt-2">
-                      <Avatar className="h-5 w-5">
-                        <AvatarImage src={conversation.profiles?.avatar_url || ''} />
-                        <AvatarFallback className="text-xs">
-                          {conversation.profiles?.display_name?.charAt(0) || '?'}
-                        </AvatarFallback>
-                      </Avatar>
                       <span className="text-xs text-muted-foreground">
                         by {conversation.profiles?.display_name || 'Anonymous'}
                       </span>
@@ -565,12 +559,7 @@ export default function StudentChat() {
                             message.sender_id === user?.id ? 'flex-row-reverse' : ''
                           }`}
                         >
-                          <Avatar className="h-8 w-8 flex-shrink-0">
-                            <AvatarImage src={message.profiles?.avatar_url || ''} />
-                            <AvatarFallback>
-                              {message.profiles?.display_name?.charAt(0) || '?'}
-                            </AvatarFallback>
-                          </Avatar>
+                          {/* Avatar removed */}
                           <div className={`flex-1 max-w-xs ${
                             message.sender_id === user?.id ? 'text-right' : ''
                           }`}>

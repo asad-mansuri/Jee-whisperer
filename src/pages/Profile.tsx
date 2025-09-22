@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
@@ -38,10 +38,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTheme } from 'next-themes';
 import { toast } from '@/components/ui/use-toast';
 
+
 interface Profile {
   id: string;
   display_name: string | null;
-  avatar_url: string | null;
   class: string | null;
   section: string | null;
   created_at: string;
@@ -56,14 +56,7 @@ interface Conversation {
   message_count?: number;
 }
 
-const AVATAR_OPTIONS = [
-  '/avatars/avatar-1.png',
-  '/avatars/avatar-2.png', 
-  '/avatars/avatar-3.png',
-  '/avatars/avatar-4.png',
-  '/avatars/avatar-5.png',
-  '/avatars/avatar-6.png',
-];
+
 
 export default function Profile() {
   const { user } = useAuth();
@@ -80,8 +73,7 @@ export default function Profile() {
   const [displayName, setDisplayName] = useState('');
   const [userClass, setUserClass] = useState('');
   const [section, setSection] = useState('');
-  const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
-  const [showAvatarSelector, setShowAvatarSelector] = useState(false);
+
 
   useEffect(() => {
     if (user) {
@@ -109,13 +101,11 @@ export default function Profile() {
         setDisplayName(data.display_name || '');
         setUserClass(data.class || '');
         setSection(data.section || '');
-        setSelectedAvatar(data.avatar_url);
       } else {
         // Create profile if it doesn't exist
         const newProfile = {
           id: user.id,
           display_name: user.user_metadata?.display_name || user.email?.split('@')[0] || '',
-          avatar_url: null,
           class: '10',
           section: null
         };
@@ -187,7 +177,6 @@ export default function Profile() {
           display_name: displayName,
           class: userClass,
           section: section,
-          avatar_url: selectedAvatar,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id);
@@ -307,46 +296,11 @@ export default function Profile() {
                   Personal Information
                 </CardTitle>
                 <CardDescription>
-                  Update your profile information and avatar
+                  Update your profile information
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Avatar Section */}
-                <div className="flex flex-col items-center gap-4">
-                  <Avatar className="h-24 w-24">
-                    <AvatarImage src={selectedAvatar || profile?.avatar_url || ''} />
-                    <AvatarFallback className="text-lg">
-                      {displayName?.charAt(0) || user?.email?.charAt(0)?.toUpperCase() || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowAvatarSelector(!showAvatarSelector)}
-                    className="flex items-center gap-2"
-                  >
-                    <Camera className="h-4 w-4" />
-                    Choose Avatar
-                  </Button>
-
-                  {showAvatarSelector && (
-                    <div className="grid grid-cols-3 gap-3 p-4 bg-muted rounded-lg">
-                      {AVATAR_OPTIONS.map((avatarUrl, index) => (
-                        <Avatar
-                          key={index}
-                          className={`h-16 w-16 cursor-pointer transition-all hover:scale-105 ${
-                            selectedAvatar === avatarUrl ? 'ring-2 ring-primary' : ''
-                          }`}
-                          onClick={() => setSelectedAvatar(avatarUrl)}
-                        >
-                          <AvatarImage src={avatarUrl} />
-                          <AvatarFallback>{index + 1}</AvatarFallback>
-                        </Avatar>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                {/* Avatar Section removed */}
 
                 <Separator />
 
@@ -415,7 +369,6 @@ export default function Profile() {
                           setDisplayName(profile?.display_name || '');
                           setUserClass(profile?.class || '');
                           setSection(profile?.section || '');
-                          setSelectedAvatar(profile?.avatar_url);
                         }}
                       >
                         <X className="h-4 w-4 mr-2" />

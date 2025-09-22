@@ -34,7 +34,7 @@ serve(async (req) => {
       });
     }
 
-    const { message, conversationId } = await req.json();
+    const { message, conversationId, style } = await req.json();
 
     if (!message) {
       return new Response(JSON.stringify({ error: 'Message is required' }), {
@@ -74,6 +74,20 @@ serve(async (req) => {
       content: msg.content,
     })) || [];
 
+    // Map style to instruction additions
+    const styleInstruction = (() => {
+      switch (style) {
+        case 'Exam-Concise':
+          return 'Respond in exam-ready concise bullets. Keep answers short and focused on scoring points.';
+        case 'Step-by-Step':
+          return 'Explain step-by-step, enumerate each step clearly with reasoning before final answer.';
+        case 'Detailed-Explain':
+          return 'Provide detailed explanations with analogies and intuitive descriptions.';
+        default:
+          return 'Use a balanced level of detail suitable for quick learning.';
+      }
+    })();
+
     const systemPrompt = {
       role: 'system',
       content: `You are Smart AI Tutor, a friendly and knowledgeable assistant for Class 10 Science students following NCERT curriculum. 
@@ -90,7 +104,9 @@ Key guidelines:
 - Help with both theory and numerical problems
 - Format mathematical expressions clearly
 
-Always be supportive, encouraging, and maintain a teaching tone that builds confidence.`
+Always be supportive, encouraging, and maintain a teaching tone that builds confidence.
+
+Response style: ${styleInstruction}`
     };
 
     // Call Groq API
