@@ -3,9 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trophy, Medal, Award, Crown, TrendingUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Trophy, Medal, Award, Crown, TrendingUp, RefreshCw, Star, Target } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface LeaderboardEntry {
   user_id: string;
@@ -24,14 +26,20 @@ interface UserStats {
   averageScore: number;
   favoriteSubject: string;
   currentStreak: number;
+  totalXP: number;
+  weeklyXP: number;
+  monthlyXP: number;
+  currentRank: number | null;
 }
 
 export default function Leaderboard() {
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState('total');
   const { user } = useAuth();
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchLeaderboardData();
@@ -50,16 +58,26 @@ export default function Leaderboard() {
 
       const { data, error } = await supabase
         .from(viewName)
-        .select(`user_id,total_xp,weekly_xp,monthly_xp,rank,display_name,avatar_url,class,section`)
+        .select('*')
         .order('rank', { ascending: true })
         .limit(50);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching leaderboard:', error);
+        throw error;
+      }
+      
       setLeaderboardData(data || []);
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load leaderboard data.',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
@@ -67,13 +85,38 @@ export default function Leaderboard() {
     if (!user) return;
 
     try {
-      const { data: quizResults, error } = await supabase
+      // Fetch user's quiz results
+      const { data: quizResults, error: quizError } = await supabase
         .from('quiz_results')
-        .select('score, topic, created_at')
+        .select('score, topic, created_at, xp_earned')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (quizError) throw quizError;
+
+      // Fetch user's leaderboard data
+      const { data: leaderboard, error: leaderboardError } = await supabase
+        .from('leaderboard')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (leaderboardError && leaderboardError.code !== 'PGRST116') {
+        throw leaderboardError;
+      }
+
+      // Get user's current rank from the active tab view
+      const viewName = activeTab === 'total'
+        ? 'leaderboard_ranked_total'
+        : activeTab === 'weekly'
+        ? 'leaderboard_ranked_weekly'
+        : 'leaderboard_ranked_monthly';
+
+      const { data: rankData } = await supabase
+        .from(viewName)
+        .select('rank')
+        .eq('user_id', user.id)
+        .single();
 
       if (quizResults && quizResults.length > 0) {
         const totalQuizzes = quizResults.length;
@@ -82,11 +125,14 @@ export default function Leaderboard() {
         // Find most common subject
         const subjectCounts: Record<string, number> = {};
         quizResults.forEach(quiz => {
-          subjectCounts[quiz.topic] = (subjectCounts[quiz.topic] || 0) + 1;
+          const topic = quiz.topic || 'general';
+          subjectCounts[topic] = (subjectCounts[topic] || 0) + 1;
         });
-        const favoriteSubject = Object.keys(subjectCounts).reduce((a, b) => 
-          subjectCounts[a] > subjectCounts[b] ? a : b
-        );
+        const favoriteSubject = Object.keys(subjectCounts).length > 0 
+          ? Object.keys(subjectCounts).reduce((a, b) => 
+              subjectCounts[a] > subjectCounts[b] ? a : b
+            )
+          : 'general';
 
         // Calculate streak (simplified - consecutive days with quizzes)
         let currentStreak = 0;
@@ -109,10 +155,38 @@ export default function Leaderboard() {
           averageScore: Math.round(averageScore),
           favoriteSubject,
           currentStreak,
+          totalXP: leaderboard?.total_xp || 0,
+          weeklyXP: leaderboard?.weekly_xp || 0,
+          monthlyXP: leaderboard?.monthly_xp || 0,
+          currentRank: rankData?.rank || null,
+        });
+      } else {
+        setUserStats({
+          totalQuizzes: 0,
+          averageScore: 0,
+          favoriteSubject: 'general',
+          currentStreak: 0,
+          totalXP: leaderboard?.total_xp || 0,
+          weeklyXP: leaderboard?.weekly_xp || 0,
+          monthlyXP: leaderboard?.monthly_xp || 0,
+          currentRank: rankData?.rank || null,
         });
       }
     } catch (error) {
       console.error('Error fetching user stats:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load your stats.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchLeaderboardData();
+    if (user) {
+      await fetchUserStats();
     }
   };
 
@@ -145,15 +219,13 @@ export default function Leaderboard() {
   const getXPForTab = (entry: LeaderboardEntry) => {
     switch (activeTab) {
       case 'weekly':
-        return entry.weekly_xp;
+        return entry.weekly_xp || 0;
       case 'monthly':
-        return entry.monthly_xp;
+        return entry.monthly_xp || 0;
       default:
-        return entry.total_xp;
+        return entry.total_xp || 0;
     }
   };
-
-  const currentUserRank = leaderboardData.find((entry) => entry.user_id === user?.id)?.rank || null;
 
   if (loading) {
     return (
@@ -175,39 +247,66 @@ export default function Leaderboard() {
         <div className="text-center">
           <h1 className="text-4xl font-bold text-foreground mb-2">Leaderboard</h1>
           <p className="text-muted-foreground">Compete with your classmates and climb the ranks!</p>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="mt-4 hover-lift"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+            {refreshing ? 'Refreshing...' : 'Refresh'}
+          </Button>
         </div>
 
         {user && userStats && (
-          <Card>
+          <Card className="bg-gradient-card shadow-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5" />
-                Your Stats
+                Your Performance
               </CardTitle>
+              <CardDescription>Your current stats and ranking</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-primary">{currentUserRank ?? '--'}</div>
-                  <div className="text-sm text-muted-foreground">Rank</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-accent">
-                    {leaderboardData.find(e => e.user_id === user.id)?.total_xp || 0}
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+                <div className="text-center p-3 bg-primary/10 rounded-lg">
+                  <div className="text-2xl font-bold text-primary">
+                    {userStats.currentRank ? `#${userStats.currentRank}` : '--'}
                   </div>
-                  <div className="text-sm text-muted-foreground">Total XP</div>
+                  <div className="text-sm text-muted-foreground">Current Rank</div>
                 </div>
-                <div className="text-center">
+                <div className="text-center p-3 bg-accent/10 rounded-lg">
+                  <div className="text-2xl font-bold text-accent">
+                    {activeTab === 'total' ? userStats.totalXP : 
+                     activeTab === 'weekly' ? userStats.weeklyXP : 
+                     userStats.monthlyXP}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {activeTab === 'total' ? 'Total XP' : 
+                     activeTab === 'weekly' ? 'Weekly XP' : 
+                     'Monthly XP'}
+                  </div>
+                </div>
+                <div className="text-center p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
                   <div className="text-2xl font-bold">{userStats.totalQuizzes}</div>
                   <div className="text-sm text-muted-foreground">Quizzes</div>
                 </div>
-                <div className="text-center">
+                <div className="text-center p-3 bg-green-50 dark:bg-green-950/30 rounded-lg">
                   <div className="text-2xl font-bold">{userStats.averageScore}%</div>
                   <div className="text-sm text-muted-foreground">Avg Score</div>
                 </div>
-                <div className="text-center">
+                <div className="text-center p-3 bg-orange-50 dark:bg-orange-950/30 rounded-lg">
                   <div className="text-2xl font-bold">{userStats.currentStreak}</div>
                   <div className="text-sm text-muted-foreground">Day Streak</div>
+                </div>
+                <div className="text-center p-3 bg-purple-50 dark:bg-purple-950/30 rounded-lg">
+                  <div className="text-lg font-bold capitalize">{userStats.favoriteSubject}</div>
+                  <div className="text-sm text-muted-foreground">Favorite</div>
+                </div>
+                <div className="text-center p-3 bg-pink-50 dark:bg-pink-950/30 rounded-lg">
+                  <div className="text-2xl font-bold">{userStats.totalXP}</div>
+                  <div className="text-sm text-muted-foreground">Total XP</div>
                 </div>
               </div>
             </CardContent>
@@ -223,91 +322,115 @@ export default function Leaderboard() {
 
           <TabsContent value={activeTab} className="space-y-4">
             {leaderboardData.length === 0 ? (
-              <Card>
-                <CardContent className="text-center py-8">
-                  <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                  <p className="text-muted-foreground">No data available yet. Take some quizzes to appear on the leaderboard!</p>
+              <Card className="bg-gradient-card shadow-card">
+                <CardContent className="text-center py-12">
+                  <Trophy className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
+                  <h3 className="text-xl font-semibold mb-2">No Rankings Yet</h3>
+                  <p className="text-muted-foreground mb-6">
+                    Take some quizzes to appear on the leaderboard and start earning XP!
+                  </p>
+                  <Button onClick={() => window.location.href = '/quizzes'} className="hover-lift">
+                    <Target className="h-4 w-4 mr-2" />
+                    Take Your First Quiz
+                  </Button>
                 </CardContent>
               </Card>
             ) : (
               <>
                 {/* Top 3 Podium */}
                 {leaderboardData.length >= 3 && (
-                  <Card>
+                  <Card className="bg-gradient-card shadow-card">
                     <CardHeader>
-                      <CardTitle>Top Performers</CardTitle>
+                      <CardTitle className="flex items-center gap-2">
+                        <Crown className="h-5 w-5 text-yellow-500" />
+                        Top Performers
+                      </CardTitle>
+                      <CardDescription>
+                        {activeTab === 'total' && 'All-time champions'}
+                        {activeTab === 'monthly' && 'This month\'s leaders'}
+                        {activeTab === 'weekly' && 'This week\'s stars'}
+                      </CardDescription>
                     </CardHeader>
                     <CardContent>
                       <div className="flex justify-center items-end gap-4 mb-6">
                         {/* 2nd Place */}
-                        <div className="text-center">
-                          <div className="w-20 h-16 bg-gradient-to-r from-gray-300 to-gray-500 rounded-t-lg flex items-center justify-center text-white font-bold mb-2">
-                            2nd
+                        {leaderboardData[1] && (
+                          <div className="text-center">
+                            <div className="w-20 h-16 bg-gradient-to-r from-gray-300 to-gray-500 rounded-t-lg flex items-center justify-center text-white font-bold mb-2">
+                              2nd
+                            </div>
+                            <Avatar className="h-12 w-12 mx-auto mb-2">
+                              <AvatarImage src={leaderboardData[1]?.avatar_url || ''} />
+                              <AvatarFallback className="bg-gray-200">
+                                {leaderboardData[1]?.display_name?.charAt(0) || '?'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="font-semibold text-sm">
+                              {leaderboardData[1]?.display_name || 'Anonymous'}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {getXPForTab(leaderboardData[1]).toLocaleString()} XP
+                            </div>
                           </div>
-                          <Avatar className="h-12 w-12 mx-auto mb-2">
-                            <AvatarImage src={leaderboardData[1]?.avatar_url || ''} />
-                            <AvatarFallback>
-                              {leaderboardData[1]?.display_name?.charAt(0) || '?'}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="font-semibold text-sm">
-                            {leaderboardData[1]?.display_name || 'Anonymous'}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {getXPForTab(leaderboardData[1])} XP
-                          </div>
-                        </div>
+                        )}
 
                         {/* 1st Place */}
-                        <div className="text-center">
-                          <div className="w-20 h-20 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-t-lg flex items-center justify-center text-white font-bold mb-2">
-                            1st
+                        {leaderboardData[0] && (
+                          <div className="text-center">
+                            <div className="w-20 h-20 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-t-lg flex items-center justify-center text-white font-bold mb-2">
+                              1st
+                            </div>
+                            <Avatar className="h-16 w-16 mx-auto mb-2">
+                              <AvatarImage src={leaderboardData[0]?.avatar_url || ''} />
+                              <AvatarFallback className="bg-yellow-200">
+                                {leaderboardData[0]?.display_name?.charAt(0) || '?'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="font-semibold">
+                              {leaderboardData[0]?.display_name || 'Anonymous'}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {getXPForTab(leaderboardData[0]).toLocaleString()} XP
+                            </div>
                           </div>
-                          <Avatar className="h-16 w-16 mx-auto mb-2">
-                            <AvatarImage src={leaderboardData[0]?.avatar_url || ''} />
-                            <AvatarFallback>
-                              {leaderboardData[0]?.display_name?.charAt(0) || '?'}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="font-semibold">
-                            {leaderboardData[0]?.display_name || 'Anonymous'}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {getXPForTab(leaderboardData[0])} XP
-                          </div>
-                        </div>
+                        )}
 
                         {/* 3rd Place */}
-                        <div className="text-center">
-                          <div className="w-20 h-12 bg-gradient-to-r from-amber-400 to-amber-600 rounded-t-lg flex items-center justify-center text-white font-bold mb-2">
-                            3rd
+                        {leaderboardData[2] && (
+                          <div className="text-center">
+                            <div className="w-20 h-12 bg-gradient-to-r from-amber-400 to-amber-600 rounded-t-lg flex items-center justify-center text-white font-bold mb-2">
+                              3rd
+                            </div>
+                            <Avatar className="h-12 w-12 mx-auto mb-2">
+                              <AvatarImage src={leaderboardData[2]?.avatar_url || ''} />
+                              <AvatarFallback className="bg-amber-200">
+                                {leaderboardData[2]?.display_name?.charAt(0) || '?'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="font-semibold text-sm">
+                              {leaderboardData[2]?.display_name || 'Anonymous'}
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {getXPForTab(leaderboardData[2]).toLocaleString()} XP
+                            </div>
                           </div>
-                          <Avatar className="h-12 w-12 mx-auto mb-2">
-                            <AvatarImage src={leaderboardData[2]?.avatar_url || ''} />
-                            <AvatarFallback>
-                              {leaderboardData[2]?.display_name?.charAt(0) || '?'}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="font-semibold text-sm">
-                            {leaderboardData[2]?.display_name || 'Anonymous'}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {getXPForTab(leaderboardData[2])} XP
-                          </div>
-                        </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
                 )}
 
                 {/* Full Rankings */}
-                <Card>
+                <Card className="bg-gradient-card shadow-card">
                   <CardHeader>
-                    <CardTitle>Rankings</CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                      <Trophy className="h-5 w-5" />
+                      Rankings
+                    </CardTitle>
                     <CardDescription>
-                      {activeTab === 'total' && 'All-time leaderboard rankings'}
-                      {activeTab === 'monthly' && 'This month\'s top performers'}
-                      {activeTab === 'weekly' && 'This week\'s achievements'}
+                      {activeTab === 'total' && 'All-time leaderboard rankings based on total XP earned'}
+                      {activeTab === 'monthly' && 'This month\'s top performers - resets monthly'}
+                      {activeTab === 'weekly' && 'This week\'s achievements - resets weekly'}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -315,31 +438,36 @@ export default function Leaderboard() {
                       {leaderboardData.map((entry, index) => (
                         <div
                           key={entry.user_id}
-                          className={`flex items-center gap-4 p-4 rounded-lg border transition-colors ${
-                            entry.user_id === user?.id ? 'bg-primary/5 border-primary' : 'hover:bg-muted/50'
+                          className={`flex items-center gap-4 p-4 rounded-lg border transition-all hover-lift ${
+                            entry.user_id === user?.id 
+                              ? 'bg-primary/10 border-primary shadow-soft' 
+                              : 'hover:bg-muted/50 border-border'
                           }`}
                         >
                           <div className="flex items-center gap-3">
                             <Badge
-                              className={`w-8 h-8 rounded-full flex items-center justify-center text-white ${getRankBadgeColor(index + 1)}`}
+                              className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold ${getRankBadgeColor(entry.rank)}`}
                             >
-                              {index + 1}
+                              {entry.rank}
                             </Badge>
-                            {getRankIcon(index + 1)}
+                            {getRankIcon(entry.rank)}
                           </div>
 
                           <Avatar className="h-10 w-10">
                             <AvatarImage src={entry.avatar_url || ''} />
-                            <AvatarFallback>
+                            <AvatarFallback className="bg-primary/10">
                               {entry.display_name?.charAt(0) || '?'}
                             </AvatarFallback>
                           </Avatar>
 
                           <div className="flex-1">
-                            <div className="font-semibold">
+                            <div className="font-semibold flex items-center gap-2">
                               {entry.display_name || 'Anonymous'}
                               {entry.user_id === user?.id && (
-                                <Badge variant="secondary" className="ml-2">You</Badge>
+                                <Badge variant="secondary" className="text-xs">You</Badge>
+                              )}
+                              {entry.rank <= 3 && (
+                                <Star className="h-4 w-4 text-yellow-500" />
                               )}
                             </div>
                             {entry.class && entry.section && (
@@ -354,20 +482,60 @@ export default function Leaderboard() {
                               {getXPForTab(entry).toLocaleString()} XP
                             </div>
                             <div className="text-sm text-muted-foreground">
-                              {activeTab === 'total' && `Total: ${entry.total_xp.toLocaleString()}`}
-                              {activeTab === 'monthly' && `Monthly: ${entry.monthly_xp.toLocaleString()}`}
-                              {activeTab === 'weekly' && `Weekly: ${entry.weekly_xp.toLocaleString()}`}
+                              {activeTab === 'total' && `Total: ${(entry.total_xp || 0).toLocaleString()}`}
+                              {activeTab === 'monthly' && `Monthly: ${(entry.monthly_xp || 0).toLocaleString()}`}
+                              {activeTab === 'weekly' && `Weekly: ${(entry.weekly_xp || 0).toLocaleString()}`}
                             </div>
                           </div>
                         </div>
                       ))}
                     </div>
+
+                    {leaderboardData.length === 0 && (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Trophy className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                        <p>No rankings available yet.</p>
+                        <p className="text-sm">Complete some quizzes to see the leaderboard!</p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </>
             )}
           </TabsContent>
         </Tabs>
+
+        {/* How XP Works */}
+        <Card className="bg-gradient-card shadow-card">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Star className="h-5 w-5 text-yellow-500" />
+              How XP Works
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="text-center p-4 bg-green-50 dark:bg-green-950/30 rounded-lg">
+                <div className="text-2xl font-bold text-green-600 mb-2">10 XP</div>
+                <div className="text-sm font-medium mb-1">Easy Questions</div>
+                <div className="text-xs text-muted-foreground">Per correct answer</div>
+              </div>
+              <div className="text-center p-4 bg-yellow-50 dark:bg-yellow-950/30 rounded-lg">
+                <div className="text-2xl font-bold text-yellow-600 mb-2">15 XP</div>
+                <div className="text-sm font-medium mb-1">Medium Questions</div>
+                <div className="text-xs text-muted-foreground">Per correct answer</div>
+              </div>
+              <div className="text-center p-4 bg-red-50 dark:bg-red-950/30 rounded-lg">
+                <div className="text-2xl font-bold text-red-600 mb-2">20 XP</div>
+                <div className="text-sm font-medium mb-1">Hard Questions</div>
+                <div className="text-xs text-muted-foreground">Per correct answer</div>
+              </div>
+            </div>
+            <div className="mt-4 text-center text-sm text-muted-foreground">
+              Complete quizzes to earn XP and climb the leaderboard! Weekly and monthly rankings reset automatically.
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

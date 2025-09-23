@@ -5,7 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { BookOpen, Beaker, Trophy, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { BookOpen, Beaker, Trophy, Clock, CheckCircle, XCircle, Brain, Calculator } from 'lucide-react';
 
 interface Question {
   id: number;
@@ -45,6 +46,7 @@ const DIFFICULTIES = [
 ];
 
 export default function Quiz() {
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState<'select' | 'quiz' | 'results'>('select');
   const [selectedSubject, setSelectedSubject] = useState<'science' | 'math' | null>(null);
   const [selectedTopic, setSelectedTopic] = useState<string>('');
@@ -56,6 +58,7 @@ export default function Quiz() {
   const [loading, setLoading] = useState(false);
   const [score, setScore] = useState(0);
   const [xpEarned, setXpEarned] = useState(0);
+  const [correctAnswers, setCorrectAnswers] = useState(0);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -85,6 +88,7 @@ export default function Quiz() {
       setQuizData(data);
       setCurrentStep('quiz');
       setTimeLeft(300);
+      setSelectedAnswers(new Array(data.questions.length).fill(-1));
     } catch (error) {
       console.error('Error generating quiz:', error);
       toast({
@@ -112,27 +116,29 @@ export default function Quiz() {
   };
 
   const handleQuizComplete = async () => {
-    if (!quizData) return;
+    if (!quizData || !user) return;
 
-    let correctAnswers = 0;
+    let correctCount = 0;
     quizData.questions.forEach((question, index) => {
       if (selectedAnswers[index] === question.correctAnswer) {
-        correctAnswers++;
+        correctCount++;
       }
     });
 
-    const finalScore = Math.round((correctAnswers / quizData.questions.length) * 100);
+    const finalScore = Math.round((correctCount / quizData.questions.length) * 100);
     const xpPerQuestion = DIFFICULTIES.find(d => d.id === selectedDifficulty)?.xp || 15;
-    const earnedXP = correctAnswers * xpPerQuestion;
+    const earnedXP = correctCount * xpPerQuestion;
 
     setScore(finalScore);
     setXpEarned(earnedXP);
+    setCorrectAnswers(correctCount);
 
     try {
-      // Save quiz result
+      // Save quiz result to database
       const { error: quizError } = await supabase
         .from('quiz_results')
         .insert({
+          user_id: user.id,
           topic: selectedTopic,
           difficulty: selectedDifficulty,
           score: finalScore,
@@ -140,9 +146,12 @@ export default function Quiz() {
           xp_earned: earnedXP,
         });
 
-      if (quizError) throw quizError;
+      if (quizError) {
+        console.error('Error saving quiz result:', quizError);
+        throw quizError;
+      }
 
-      // Leaderboard is updated via DB trigger on quiz_results insert
+      // The leaderboard will be updated automatically via the database trigger
 
       toast({
         title: 'Quiz Completed!',
@@ -152,7 +161,7 @@ export default function Quiz() {
       console.error('Error saving quiz result:', error);
       toast({
         title: 'Error',
-        description: 'Failed to save quiz result.',
+        description: 'Failed to save quiz result. Your progress may not be recorded.',
         variant: 'destructive',
       });
     }
@@ -171,6 +180,7 @@ export default function Quiz() {
     setTimeLeft(300);
     setScore(0);
     setXpEarned(0);
+    setCorrectAnswers(0);
   };
 
   const formatTime = (seconds: number) => {
@@ -188,7 +198,7 @@ export default function Quiz() {
             <p className="text-muted-foreground">Test your knowledge and earn XP for the leaderboard!</p>
           </div>
 
-          <Card className="mb-6">
+          <Card className="mb-6 bg-gradient-card shadow-card">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BookOpen className="h-5 w-5" />
@@ -199,7 +209,7 @@ export default function Quiz() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Button
                   variant={selectedSubject === 'science' ? 'default' : 'outline'}
-                  className="h-20 text-lg"
+                  className="h-20 text-lg hover-lift"
                   onClick={() => setSelectedSubject('science')}
                 >
                   <Beaker className="h-6 w-6 mr-2" />
@@ -207,17 +217,18 @@ export default function Quiz() {
                 </Button>
                 <Button
                   variant={selectedSubject === 'math' ? 'default' : 'outline'}
-                  className="h-20 text-lg"
+                  className="h-20 text-lg hover-lift"
                   onClick={() => setSelectedSubject('math')}
                 >
-                  📐 Math
+                  <Calculator className="h-6 w-6 mr-2" />
+                  Mathematics
                 </Button>
               </div>
             </CardContent>
           </Card>
 
           {selectedSubject && (
-            <Card className="mb-6">
+            <Card className="mb-6 bg-gradient-card shadow-card">
               <CardHeader>
                 <CardTitle>Select Topic</CardTitle>
               </CardHeader>
@@ -227,7 +238,7 @@ export default function Quiz() {
                     <Button
                       key={topic.id}
                       variant={selectedTopic === topic.id ? 'default' : 'outline'}
-                      className="justify-start"
+                      className="justify-start hover-lift"
                       onClick={() => setSelectedTopic(topic.id)}
                     >
                       <span className="mr-2">{topic.icon}</span>
@@ -240,9 +251,10 @@ export default function Quiz() {
           )}
 
           {selectedTopic && (
-            <Card className="mb-6">
+            <Card className="mb-6 bg-gradient-card shadow-card">
               <CardHeader>
                 <CardTitle>Select Difficulty</CardTitle>
+                <CardDescription>Higher difficulty gives more XP per correct answer</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -251,8 +263,9 @@ export default function Quiz() {
                       key={diff.id}
                       variant={selectedDifficulty === diff.id ? 'default' : 'outline'}
                       onClick={() => setSelectedDifficulty(diff.id)}
+                      className="hover-lift"
                     >
-                      <Badge className={`mr-2 ${diff.color}`} variant="secondary">
+                      <Badge className={`mr-2 ${diff.color} text-white`} variant="secondary">
                         {diff.xp} XP
                       </Badge>
                       {diff.name}
@@ -265,14 +278,42 @@ export default function Quiz() {
 
           {selectedTopic && selectedDifficulty && (
             <div className="text-center">
-              <Button
-                size="lg"
-                onClick={generateQuiz}
-                disabled={loading}
-                className="px-8 py-4 text-lg"
-              >
-                {loading ? 'Generating Quiz...' : 'Start Quiz'}
-              </Button>
+              <Card className="bg-gradient-card shadow-card mb-6">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground mb-4">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4" />
+                      <span>5 minutes</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <BookOpen className="h-4 w-4" />
+                      <span>10 questions</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Trophy className="h-4 w-4" />
+                      <span>Up to {DIFFICULTIES.find(d => d.id === selectedDifficulty)?.xp! * 10} XP</span>
+                    </div>
+                  </div>
+                  <Button
+                    size="lg"
+                    onClick={generateQuiz}
+                    disabled={loading}
+                    className="px-8 py-4 text-lg hover-lift"
+                  >
+                    {loading ? (
+                      <>
+                        <Brain className="h-5 w-5 mr-2 animate-pulse" />
+                        Generating Quiz...
+                      </>
+                    ) : (
+                      <>
+                        <Trophy className="h-5 w-5 mr-2" />
+                        Start Quiz
+                      </>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
             </div>
           )}
         </div>
@@ -301,14 +342,17 @@ export default function Quiz() {
 
           <Progress value={progress} className="mb-6" />
 
-          <Card>
+          <Card className="bg-gradient-card shadow-card">
             <CardHeader>
               <CardTitle className="text-xl leading-relaxed">
                 {question.question}
               </CardTitle>
               <div className="flex gap-2">
-                <Badge variant="outline">{question.difficulty}</Badge>
+                <Badge variant="outline" className="capitalize">{question.difficulty}</Badge>
                 <Badge variant="outline">{question.category}</Badge>
+                <Badge className={DIFFICULTIES.find(d => d.id === selectedDifficulty)?.color || 'bg-primary'}>
+                  {DIFFICULTIES.find(d => d.id === selectedDifficulty)?.xp || 15} XP per correct answer
+                </Badge>
               </div>
             </CardHeader>
             <CardContent>
@@ -317,13 +361,13 @@ export default function Quiz() {
                   <Button
                     key={index}
                     variant={selectedAnswers[currentQuestion] === index ? 'default' : 'outline'}
-                    className="w-full text-left justify-start p-4 h-auto"
+                    className="w-full text-left justify-start p-4 h-auto hover-lift"
                     onClick={() => handleAnswerSelect(index)}
                   >
-                    <span className="font-medium mr-3">
-                      {String.fromCharCode(65 + index)}.
+                    <span className="font-medium mr-3 bg-muted rounded-full w-6 h-6 flex items-center justify-center text-xs">
+                      {String.fromCharCode(65 + index)}
                     </span>
-                    {option}
+                    <span className="flex-1">{option}</span>
                   </Button>
                 ))}
               </div>
@@ -333,12 +377,14 @@ export default function Quiz() {
                   variant="outline"
                   onClick={() => setCurrentQuestion(Math.max(0, currentQuestion - 1))}
                   disabled={currentQuestion === 0}
+                  className="hover-lift"
                 >
                   Previous
                 </Button>
                 <Button
                   onClick={nextQuestion}
-                  disabled={selectedAnswers[currentQuestion] === undefined}
+                  disabled={selectedAnswers[currentQuestion] === -1}
+                  className="hover-lift"
                 >
                   {currentQuestion === quizData.questions.length - 1 ? 'Finish Quiz' : 'Next'}
                 </Button>
@@ -351,10 +397,13 @@ export default function Quiz() {
   }
 
   if (currentStep === 'results' && quizData) {
+    const difficultyInfo = DIFFICULTIES.find(d => d.id === selectedDifficulty);
+    const maxPossibleXP = difficultyInfo ? difficultyInfo.xp * quizData.questions.length : 0;
+
     return (
       <div className="min-h-screen bg-gradient-hero p-6">
         <div className="max-w-2xl mx-auto">
-          <Card>
+          <Card className="bg-gradient-card shadow-card">
             <CardHeader className="text-center">
               <div className="mx-auto w-16 h-16 bg-primary rounded-full flex items-center justify-center mb-4">
                 <Trophy className="h-8 w-8 text-primary-foreground" />
@@ -366,58 +415,88 @@ export default function Quiz() {
               <div className="text-center">
                 <div className="text-6xl font-bold text-primary mb-2">{score}%</div>
                 <div className="text-muted-foreground">
-                  {selectedAnswers.filter((answer, index) => 
-                    answer === quizData.questions[index].correctAnswer
-                  ).length} out of {quizData.questions.length} correct
+                  {correctAnswers} out of {quizData.questions.length} correct
                 </div>
               </div>
 
-              <div className="bg-muted rounded-lg p-4">
-                <div className="flex justify-between items-center mb-2">
-                  <span>XP Earned</span>
-                  <span className="text-2xl font-bold text-accent">+{xpEarned}</span>
+              <div className="bg-gradient-primary/10 rounded-lg p-6 border border-primary/20">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="text-lg font-medium">XP Earned</span>
+                  <span className="text-3xl font-bold text-primary">+{xpEarned}</span>
                 </div>
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>Difficulty: {selectedDifficulty}</span>
-                  <span>Topic: {selectedTopic}</span>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-muted-foreground">Difficulty:</span>
+                    <span className="ml-2 font-medium capitalize">{selectedDifficulty}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Topic:</span>
+                    <span className="ml-2 font-medium capitalize">{selectedTopic}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">XP per question:</span>
+                    <span className="ml-2 font-medium">{difficultyInfo?.xp || 15}</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">Max possible:</span>
+                    <span className="ml-2 font-medium">{maxPossibleXP} XP</span>
+                  </div>
                 </div>
               </div>
 
               <div className="space-y-3">
-                <h3 className="font-semibold">Review Answers:</h3>
-                {quizData.questions.map((question, index) => {
-                  const userAnswer = selectedAnswers[index];
-                  const isCorrect = userAnswer === question.correctAnswer;
-                  return (
-                    <div key={index} className="flex items-start gap-3 p-3 border rounded-lg">
-                      {isCorrect ? (
-                        <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                      ) : (
-                        <XCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
-                      )}
-                      <div className="flex-1">
-                        <div className="font-medium text-sm mb-1">
-                          Q{index + 1}: {question.question}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          Your answer: {userAnswer !== undefined ? question.options[userAnswer] : 'Not answered'}
-                          {!isCorrect && (
-                            <div className="text-green-600">
-                              Correct: {question.options[question.correctAnswer]}
+                <h3 className="font-semibold flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-green-500" />
+                  Review Answers:
+                </h3>
+                <div className="max-h-64 overflow-y-auto space-y-2">
+                  {quizData.questions.map((question, index) => {
+                    const userAnswer = selectedAnswers[index];
+                    const isCorrect = userAnswer === question.correctAnswer;
+                    const wasAnswered = userAnswer !== -1;
+                    
+                    return (
+                      <div key={index} className="flex items-start gap-3 p-3 border rounded-lg bg-muted/30">
+                        {isCorrect ? (
+                          <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                        ) : (
+                          <XCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-sm mb-1">
+                            Q{index + 1}: {question.question}
+                          </div>
+                          <div className="text-sm space-y-1">
+                            <div className={wasAnswered ? (isCorrect ? 'text-green-600' : 'text-red-600') : 'text-muted-foreground'}>
+                              Your answer: {wasAnswered ? question.options[userAnswer] : 'Not answered'}
                             </div>
-                          )}
+                            {!isCorrect && (
+                              <div className="text-green-600 font-medium">
+                                Correct: {question.options[question.correctAnswer]}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <Badge variant={isCorrect ? 'default' : 'secondary'} className="text-xs">
+                            {isCorrect ? `+${difficultyInfo?.xp || 15} XP` : '0 XP'}
+                          </Badge>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
 
               <div className="flex gap-3">
-                <Button onClick={resetQuiz} className="flex-1">
+                <Button onClick={resetQuiz} className="flex-1 hover-lift">
                   Take Another Quiz
                 </Button>
-                <Button variant="outline" onClick={() => window.location.href = '/leaderboard'}>
+                <Button 
+                  variant="outline" 
+                  onClick={() => window.location.href = '/leaderboard'}
+                  className="hover-lift"
+                >
                   View Leaderboard
                 </Button>
               </div>

@@ -62,6 +62,12 @@ const Dashboard = () => {
           .eq('user_id', user.id)
           .single();
 
+        // Get user's current rank
+        const { data: rankData } = await supabase
+          .from('leaderboard_ranked_total')
+          .select('rank')
+          .eq('user_id', user.id)
+          .single();
         // Fetch recent activities
         const { data: activities } = await supabase
           .from('activities')
@@ -73,6 +79,7 @@ const Dashboard = () => {
         // Calculate stats
         const totalQuizzes = quizResults?.length || 0;
         const totalXP = leaderboard?.total_xp || 0;
+        const currentRank = rankData?.rank || null;
         
         // Calculate streak (simplified - consecutive days with activity)
         const currentStreak = activities?.length > 0 ? Math.min(activities.length, 7) : 0;
@@ -97,6 +104,7 @@ const Dashboard = () => {
           currentStreak,
           weeklyProgress,
           recentActivities,
+          currentRank,
         });
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -181,7 +189,7 @@ const Dashboard = () => {
           <CardContent>
             <div className="text-2xl font-bold">{stats.totalXP}</div>
             <p className="text-xs text-muted-foreground">
-              +{stats.totalXP > 0 ? Math.floor(stats.totalXP * 0.1) : 0} from last week
+              {stats.currentRank ? `Rank #${stats.currentRank}` : 'Unranked'}
             </p>
           </CardContent>
         </Card>
