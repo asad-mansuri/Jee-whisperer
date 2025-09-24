@@ -15,8 +15,10 @@ import {
   Lightbulb,
   Calculator,
   Beaker,
-  Atom
+  Atom,
+  Menu
 } from 'lucide-react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -43,6 +45,7 @@ const Chat = () => {
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingConversations, setIsLoadingConversations] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const quickPrompts = [
@@ -250,8 +253,8 @@ const Chat = () => {
 
   return (
     <div className="flex h-[calc(100vh-8rem)] gap-6">
-      {/* Conversations Sidebar */}
-      <Card className="w-80 bg-gradient-card shadow-card">
+      {/* Conversations Sidebar - desktop */}
+      <Card className="w-80 bg-gradient-card shadow-card hidden lg:block">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">Conversations</CardTitle>
@@ -304,12 +307,72 @@ const Chat = () => {
         </CardContent>
       </Card>
 
+      {/* Mobile Sidebar Sheet */}
+      <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
+        <SheetContent side="left" className="w-80 p-0">
+          <SheetHeader className="p-4">
+            <SheetTitle>Conversations</SheetTitle>
+          </SheetHeader>
+          <div className="px-4 pb-4">
+            <Button size="sm" onClick={createNewConversation} className="w-full mb-3">
+              <Plus className="h-4 w-4 mr-2" /> New Chat
+            </Button>
+          </div>
+          <ScrollArea className="h-[calc(100vh-8rem)]">
+            <div className="p-3 space-y-2">
+              {conversations.map((conversation) => (
+                <div
+                  key={conversation.id}
+                  className={`p-3 rounded-lg cursor-pointer transition-all hover-lift ${
+                    currentConversation === conversation.id
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted/50 hover:bg-muted'
+                  }`}
+                  onClick={() => {
+                    setCurrentConversation(conversation.id);
+                    loadMessages(conversation.id);
+                    setIsSidebarOpen(false);
+                  }}
+                >
+                  <div className="flex items-center gap-2">
+                    <MessageCircle className="h-4 w-4 flex-shrink-0" />
+                    <span className="text-sm font-medium truncate">
+                      {conversation.title}
+                    </span>
+                  </div>
+                  <p className="text-xs opacity-70 mt-1">
+                    {new Date(conversation.updated_at).toLocaleDateString()}
+                  </p>
+                </div>
+              ))}
+
+              {conversations.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  <MessageCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No conversations yet.</p>
+                  <p className="text-sm">Start a new chat to get help!</p>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </SheetContent>
+      </Sheet>
+
       {/* Chat Area */}
       <Card className="flex-1 bg-gradient-card shadow-card">
         {currentConversation ? (
           <div className="flex flex-col h-full">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2">
+                {/* Mobile toggle */}
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="lg:hidden mr-2"
+                  onClick={() => setIsSidebarOpen(true)}
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
                 <Bot className="h-5 w-5 text-primary" />
                 Smart AI Tutor
                 <Badge variant="secondary" className="ml-auto">Class 10 Science</Badge>

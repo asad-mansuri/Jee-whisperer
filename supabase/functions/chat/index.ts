@@ -109,6 +109,46 @@ Always be supportive, encouraging, and maintain a teaching tone that builds conf
 Response style: ${styleInstruction}`
     };
 
+    // Handle builder-origin questions explicitly
+    const normalized = (message as string).toLowerCase();
+    const builderPatterns = [
+      /who\s+(made|built|created)\s+(you|u|this|the bot)/i,
+      /(who\s+is\s+your\s+(maker|builder|creator))/i,
+      /(who\s+developed\s+(you|this))/i,
+      /your\s+(maker|creator|developer)/i
+    ];
+    if (builderPatterns.some((re) => re.test(normalized))) {
+      const aiMessage = 'I was made by Code Storm.';
+      // Save AI response
+      const { error: aiMessageError } = await supabaseClient
+        .from('messages')
+        .insert({
+          conversation_id: conversationId,
+          sender: 'bot',
+          content: aiMessage,
+        });
+      if (aiMessageError) {
+        console.error('Error saving AI message:', aiMessageError);
+      }
+      // Log activity
+      const { error: activityError } = await supabaseClient
+        .from('activities')
+        .insert({
+          user_id: user.id,
+          activity_type: 'chat',
+          metadata: {
+            conversation_id: conversationId,
+            message_preview: message.substring(0, 100),
+          },
+        });
+      if (activityError) {
+        console.error('Error logging activity:', activityError);
+      }
+      return new Response(JSON.stringify({ message: aiMessage }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Call Groq API
     const groqApiKey = Deno.env.get('GROQ_API_KEY');
     const groqResponse = await fetch('https://api.groq.com/openai/v1/chat/completions', {

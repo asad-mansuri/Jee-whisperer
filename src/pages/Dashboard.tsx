@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface DashboardStats {
   totalQuizzes: number;
@@ -34,6 +34,7 @@ interface DashboardStats {
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats>({
     totalQuizzes: 0,
     totalXP: 0,
@@ -324,7 +325,7 @@ const Dashboard = () => {
                 <p className="text-sm text-blue-700 dark:text-blue-300">
                   Review equations of motion
                 </p>
-                <Button size="sm" className="mt-2 bg-blue-600 hover:bg-blue-700">
+                <Button size="sm" className="mt-2 bg-blue-600 hover:bg-blue-700" onClick={() => navigate('/quizzes')}>
                   Start Quiz
                 </Button>
               </div>
@@ -334,7 +335,7 @@ const Dashboard = () => {
                 <p className="text-sm text-green-700 dark:text-green-300">
                   Properties of acids and bases
                 </p>
-                <Button size="sm" className="mt-2 bg-green-600 hover:bg-green-700">
+                <Button size="sm" className="mt-2 bg-green-600 hover:bg-green-700" onClick={() => navigate('/lectures')}>
                   Watch Video
                 </Button>
               </div>
@@ -344,7 +345,7 @@ const Dashboard = () => {
                 <p className="text-sm text-purple-700 dark:text-purple-300">
                   Life processes in living organisms
                 </p>
-                <Button size="sm" className="mt-2 bg-purple-600 hover:bg-purple-700">
+                <Button size="sm" className="mt-2 bg-purple-600 hover:bg-purple-700" onClick={() => navigate('/chat')}>
                   Explore
                 </Button>
               </div>

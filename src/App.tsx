@@ -16,6 +16,7 @@ import Notes from "./pages/Notes";
 import Quiz from "./pages/Quiz";
 import Leaderboard from "./pages/Leaderboard";
 import DirectChat from "./pages/DirectChat";
+import Lectures from "./pages/Lectures";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
@@ -136,10 +137,7 @@ const AppRoutes = () => {
         path="/lectures"
         element={
           <ProtectedRoute>
-            <div className="p-6">
-              <h1 className="text-2xl font-bold">Lectures</h1>
-              <p className="text-muted-foreground">Coming soon...</p>
-            </div>
+            <Lectures />
           </ProtectedRoute>
         }
       />
@@ -162,14 +160,7 @@ const AppRoutes = () => {
         }
       />
       
-      <Route
-        path="/student-chat"
-        element={
-          <ProtectedRoute>
-            <DirectChat />
-          </ProtectedRoute>
-        }
-      />
+      {/* Student Chat removed */}
       
       <Route
         path="/profile"

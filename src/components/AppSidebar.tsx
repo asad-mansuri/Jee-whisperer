@@ -34,7 +34,6 @@ const mainItems = [
 
 const socialItems = [
   { title: 'Leaderboard', url: '/leaderboard', icon: Trophy },
-  { title: 'Student Chat', url: '/student-chat', icon: Users },
 ];
 
 const settingsItems = [

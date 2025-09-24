@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,6 +43,7 @@ import { toast } from '@/components/ui/use-toast';
 interface Profile {
   id: string;
   display_name: string | null;
+  avatar_url?: string | null;
   class: string | null;
   section: string | null;
   created_at: string;
@@ -71,6 +73,8 @@ export default function Profile() {
   
   // Form data
   const [displayName, setDisplayName] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState('');
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [userClass, setUserClass] = useState('');
   const [section, setSection] = useState('');
 
@@ -99,6 +103,7 @@ export default function Profile() {
       if (data) {
         setProfile(data);
         setDisplayName(data.display_name || '');
+        setAvatarUrl(data.avatar_url || '');
         setUserClass(data.class || '');
         setSection(data.section || '');
       } else {
@@ -120,6 +125,7 @@ export default function Profile() {
         
         setProfile(createdProfile);
         setDisplayName(createdProfile.display_name || '');
+        setAvatarUrl('');
         setUserClass(createdProfile.class || '');
         setSection(createdProfile.section || '');
       }
@@ -175,6 +181,7 @@ export default function Profile() {
         .from('profiles')
         .update({
           display_name: displayName,
+          avatar_url: avatarUrl || null,
           class: userClass,
           section: section,
           updated_at: new Date().toISOString()
@@ -300,7 +307,44 @@ export default function Profile() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Avatar Section removed */}
+                {/* Avatar Section */}
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-16 w-16">
+                    <AvatarImage src={avatarUrl || ''} />
+                    <AvatarFallback>
+                      {displayName?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="space-y-2">
+                    <Label htmlFor="avatar-url">Avatar URL</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="avatar-url"
+                        placeholder="https://..."
+                        value={avatarUrl}
+                        onChange={(e) => setAvatarUrl(e.target.value)}
+                        disabled={!editingProfile}
+                        className="flex-1"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={!editingProfile}
+                        onClick={() => {
+                          // Simple validation for now
+                          if (!avatarUrl) return;
+                          toast({ title: 'Preview updated' });
+                        }}
+                      >
+                        <Camera className="h-4 w-4 mr-2" />
+                        Preview
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Paste an image URL. This avatar appears on the leaderboard.
+                    </p>
+                  </div>
+                </div>
 
                 <Separator />
 
@@ -367,6 +411,7 @@ export default function Profile() {
                         onClick={() => {
                           setEditingProfile(false);
                           setDisplayName(profile?.display_name || '');
+                        setAvatarUrl(profile?.avatar_url || '');
                           setUserClass(profile?.class || '');
                           setSection(profile?.section || '');
                         }}

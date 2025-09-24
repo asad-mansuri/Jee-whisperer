@@ -3,8 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Trophy, Medal, Award, Crown, TrendingUp, RefreshCw, Star, Target } from 'lucide-react';
+import { Trophy, Medal, Award, Crown, TrendingUp, Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -36,7 +35,6 @@ export default function Leaderboard() {
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>([]);
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState('total');
   const { user } = useAuth();
   const { toast } = useToast();
@@ -63,11 +61,19 @@ export default function Leaderboard() {
         .limit(50);
 
       if (error) {
-        console.error('Error fetching leaderboard:', error);
-        throw error;
+        console.warn('View fetch failed, using fallback.', error);
+        await fetchLeaderboardDataFallback();
+        return;
       }
-      
-      setLeaderboardData(data || []);
+
+      if (!data || data.length === 0) {
+        await fetchLeaderboardDataFallback();
+        return;
+      }
+
+      // Ensure client-side ordering by rank just in case
+      const sorted = (data || []).slice().sort((a: any, b: any) => (a.rank || 0) - (b.rank || 0));
+      setLeaderboardData(sorted);
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
       toast({
@@ -77,7 +83,71 @@ export default function Leaderboard() {
       });
     } finally {
       setLoading(false);
-      setRefreshing(false);
+    }
+  };
+
+  const fetchLeaderboardDataFallback = async () => {
+    try {
+      const metric = activeTab === 'total' ? 'total_xp' : activeTab === 'weekly' ? 'weekly_xp' : 'monthly_xp';
+
+      const { data: baseRows, error: baseErr } = await supabase
+        .from('leaderboard')
+        .select('user_id, total_xp, weekly_xp, monthly_xp, rank_updated_at')
+        .order(metric, { ascending: false })
+        .order('rank_updated_at', { ascending: true })
+        .limit(50);
+
+      if (baseErr) throw baseErr;
+
+      const userIds = (baseRows || []).map(r => r.user_id);
+      let profilesById: Record<string, any> = {};
+      if (userIds.length > 0) {
+        const { data: profiles, error: profErr } = await supabase
+          .from('profiles')
+          .select('id, display_name, avatar_url, class, section')
+          .in('id', userIds);
+        if (profErr) throw profErr;
+        profilesById = (profiles || []).reduce((acc: any, p: any) => { acc[p.id] = p; return acc; }, {});
+      }
+
+      const sorted = (baseRows || []).slice().sort((a: any, b: any) => {
+        const av = a[metric] || 0; const bv = b[metric] || 0;
+        if (bv !== av) return bv - av;
+        const at = new Date(a.rank_updated_at || 0).getTime();
+        const bt = new Date(b.rank_updated_at || 0).getTime();
+        return at - bt;
+      });
+
+      let lastVal: number | null = null;
+      let lastRank = 0;
+      const enriched = sorted.map((row: any, idx: number) => {
+        const val = row[metric] || 0;
+        if (lastVal === null || val !== lastVal) {
+          lastRank = idx + 1;
+          lastVal = val;
+        }
+        const prof = profilesById[row.user_id] || {};
+        return {
+          user_id: row.user_id,
+          total_xp: row.total_xp || 0,
+          weekly_xp: row.weekly_xp || 0,
+          monthly_xp: row.monthly_xp || 0,
+          rank: lastRank,
+          display_name: prof.display_name || null,
+          avatar_url: prof.avatar_url || null,
+          class: prof.class || null,
+          section: prof.section || null,
+        } as LeaderboardEntry;
+      });
+
+      setLeaderboardData(enriched);
+    } catch (fallbackErr) {
+      console.error('Fallback fetch failed:', fallbackErr);
+      toast({
+        title: 'Error',
+        description: 'Failed to load leaderboard data.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -182,14 +252,6 @@ export default function Leaderboard() {
     }
   };
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await fetchLeaderboardData();
-    if (user) {
-      await fetchUserStats();
-    }
-  };
-
   const getRankIcon = (position: number) => {
     switch (position) {
       case 1:
@@ -247,16 +309,6 @@ export default function Leaderboard() {
         <div className="text-center">
           <h1 className="text-4xl font-bold text-foreground mb-2">Leaderboard</h1>
           <p className="text-muted-foreground">Compete with your classmates and climb the ranks!</p>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="mt-4 hover-lift"
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
-            {refreshing ? 'Refreshing...' : 'Refresh'}
-          </Button>
         </div>
 
         {user && userStats && (
@@ -329,10 +381,6 @@ export default function Leaderboard() {
                   <p className="text-muted-foreground mb-6">
                     Take some quizzes to appear on the leaderboard and start earning XP!
                   </p>
-                  <Button onClick={() => window.location.href = '/quizzes'} className="hover-lift">
-                    <Target className="h-4 w-4 mr-2" />
-                    Take Your First Quiz
-                  </Button>
                 </CardContent>
               </Card>
             ) : (
