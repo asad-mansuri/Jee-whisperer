@@ -11,7 +11,6 @@ Built by **Code Storm ⚡**.
 ### 🏠 Welcome Page
 - Clean introduction with **Start Journey** button.
 - Authentication using **Supabase Auth** (login/signup).
-- UI inspired by [calmchase.com](https://calmchase.com/).
 
 ### 📊 Dashboard
 - Navbar, collapsible sidebar (burger menu), footer.
@@ -53,14 +52,12 @@ Built by **Code Storm ⚡**.
 ### 🏆 Leaderboard
 - Competitive ranking based on quiz scores.
 - Ranking system works **per question**.
-- Students can **chat with each other (1-to-1, WhatsApp style)**.
-- Chats stored in Supabase tables/buckets.
+- Chats stored in Supabase tables.
 
 ### 👤 Profile
 - Edit personal details + profile picture.
 - Manage Smart Tutor chats:
   - Edit & delete conversations (like ChatGPT).
-  - Edit & delete personal chats (like WhatsApp).
 - Dark/Light mode toggle with **sun–moon animation**.
 - Theme preference saved to DB.
 
@@ -80,7 +77,6 @@ Built by **Code Storm ⚡**.
   - [shadcn/ui](https://ui.shadcn.com/) (components)
   - [lucide-react](https://lucide.dev/) (icons)
   - [framer-motion](https://www.framer.com/motion/) (animations)
-
 ---
 
 ## 📂 Project Structure
