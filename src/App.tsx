@@ -8,21 +8,19 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { Layout } from "@/components/Layout";
 import { Loader2 } from "lucide-react";
 
-// Pages
 import Welcome from "./pages/Welcome";
 import Dashboard from "./pages/Dashboard";
 import Chat from "./pages/Chat";
 import Notes from "./pages/Notes";
 import Quiz from "./pages/Quiz";
 import Leaderboard from "./pages/Leaderboard";
-import DirectChat from "./pages/DirectChat";
+import Simulations from "./pages/Simulations";
 import Lectures from "./pages/Lectures";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-// Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
 
@@ -44,7 +42,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <Layout>{children}</Layout>;
 };
 
-// Public Route Component (redirects to dashboard if authenticated)
 const PublicRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, loading } = useAuth();
 
@@ -69,7 +66,6 @@ const PublicRoute = ({ children }: { children: React.ReactNode }) => {
 const AppRoutes = () => {
   return (
     <Routes>
-      {/* Public Routes */}
       <Route
         path="/"
         element={
@@ -79,7 +75,6 @@ const AppRoutes = () => {
         }
       />
       
-      {/* Auth callback route - handles email confirmation */}
       <Route
         path="/auth/callback"
         element={
@@ -91,8 +86,6 @@ const AppRoutes = () => {
           </div>
         }
       />
-
-      {/* Protected Routes */}
       <Route
         path="/dashboard"
         element={
@@ -125,10 +118,7 @@ const AppRoutes = () => {
         path="/simulations"
         element={
           <ProtectedRoute>
-            <div className="p-6">
-              <h1 className="text-2xl font-bold">Simulations</h1>
-              <p className="text-muted-foreground">Coming soon...</p>
-            </div>
+            <Simulations/>
           </ProtectedRoute>
         }
       />

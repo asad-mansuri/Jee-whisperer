@@ -1,0 +1,75 @@
+{
+  "tech_stack": ["TypeScript", "React", "Vite", "Supabase", "React Router", "Tailwind CSS", "Shadcn UI", "next-themes"],
+  "features": [
+    {
+      "name": "Authentication",
+      "description": "User authentication system using Supabase Auth",
+      "files": ["src/contexts/AuthContext.tsx", "src/components/AuthModal.tsx"]
+    },
+    {
+      "name": "Theme Management",
+      "description": "Dark/light theme management using next-themes",
+      "files": ["src/contexts/ThemeContext.tsx"]
+    },
+    {
+      "name": "Routing",
+      "description": "Application routing with protected and public routes",
+      "files": ["src/App.tsx"]
+    },
+    {
+      "name": "Navigation",
+      "description": "Application sidebar and navigation components",
+      "files": ["src/components/AppSidebar.tsx", "src/components/Layout.tsx"]
+    },
+    {
+      "name": "Dashboard",
+      "description": "Main dashboard with user progress and stats",
+      "files": ["src/pages/Dashboard.tsx"]
+    },
+    {
+      "name": "Chat",
+      "description": "AI tutor chat functionality",
+      "files": ["src/pages/Chat.tsx", "src/pages/PersonalChat.tsx"]
+    },
+    {
+      "name": "Simulations",
+      "description": "Interactive science simulations",
+      "files": ["src/pages/Simulations.tsx"]
+    },
+    {
+      "name": "Quizzes",
+      "description": "Interactive quizzes for learning assessment",
+      "files": ["src/pages/Quiz.tsx"]
+    },
+    {
+      "name": "Notes",
+      "description": "Study notes management",
+      "files": ["src/pages/Notes.tsx"]
+    },
+    {
+      "name": "Lectures",
+      "description": "Video lectures integration",
+      "files": ["src/pages/Lectures.tsx"]
+    },
+    {
+      "name": "Leaderboard",
+      "description": "User ranking and achievements",
+      "files": ["src/pages/Leaderboard.tsx"]
+    },
+    {
+      "name": "Profile",
+      "description": "User profile management",
+      "files": ["src/pages/Profile.tsx"]
+    },
+    {
+      "name": "UI Components",
+      "description": "Reusable UI components from Shadcn UI",
+      "files": ["src/components/ui"]
+    },
+    {
+      "name": "Supabase Integration",
+      "description": "Backend integration with Supabase",
+      "files": ["src/integrations/supabase/client.ts", "supabase/functions"]
+    }
+  ]
+}
