@@ -48,26 +48,37 @@ const Chat = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // JEE-level quick prompts
   const quickPrompts = [
     {
-      text: "Explain Newton's laws of motion",
+      text: "Derive the equation for the time period of a simple pendulum and discuss the effect of length and gravity.",
       icon: Calculator,
-      category: "Physics"
+      category: "Physics (JEE Level)"
     },
     {
-      text: "What are acids and bases?",
+      text: "Solve: If \u221A(x+3) + \u221A(x-2) = 5, find the value of x.",
+      icon: Calculator,
+      category: "Maths (JEE Level)"
+    },
+    {
+      text: "Explain the mechanism of SN1 and SN2 reactions with suitable examples.",
       icon: Beaker,
-      category: "Chemistry"
+      category: "Chemistry (JEE Level)"
     },
     {
-      text: "How does photosynthesis work?",
-      icon: Lightbulb,
-      category: "Biology"
-    },
-    {
-      text: "Explain the periodic table structure",
+      text: "A block slides down a frictionless incline of height h. Find its speed at the bottom using energy conservation.",
       icon: Atom,
-      category: "Chemistry"
+      category: "Physics (JEE Level)"
+    },
+    {
+      text: "Discuss the hybridization and shape of SF6 molecule.",
+      icon: Beaker,
+      category: "Chemistry (JEE Level)"
+    },
+    {
+      text: "Find the equation of the tangent to the curve y = x^2 at x = 1.",
+      icon: Calculator,
+      category: "Maths (JEE Level)"
     }
   ];
 
@@ -75,6 +86,7 @@ const Chat = () => {
     if (user) {
       loadConversations();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   useEffect(() => {
@@ -374,8 +386,8 @@ const Chat = () => {
                   <Menu className="h-5 w-5" />
                 </Button>
                 <Bot className="h-5 w-5 text-primary" />
-                Smart AI Tutor
-                <Badge variant="secondary" className="ml-auto">Class 10 Science</Badge>
+                JEE Tutor & Mentor
+                <Badge variant="secondary" className="ml-auto">JEE Advanced/ Mains</Badge>
               </CardTitle>
             </CardHeader>
 
@@ -387,27 +399,29 @@ const Chat = () => {
                 {messages.length === 0 ? (
                   <div className="text-center py-8">
                     <Bot className="h-16 w-16 mx-auto mb-4 text-primary" />
-                    <h3 className="text-xl font-semibold mb-2">Welcome to Smart AI Tutor!</h3>
+                    <h3 className="text-xl font-semibold mb-2">Welcome to your JEE Tutor & Mentor!</h3>
                     <p className="text-muted-foreground mb-6">
-                      I'm here to help you with Class 10 Science. Ask me anything about Physics, Chemistry, or Biology!
+                      I am your personal AI mentor for JEE Mains & Advanced. Ask me conceptual doubts, get step-by-step solutions, or request tips for Physics, Chemistry, and Maths at the JEE level.
                     </p>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl mx-auto">
-                      {quickPrompts.map((prompt, index) => (
-                        <Button
-                          key={index}
-                          variant="outline"
-                          className="justify-start p-4 h-auto hover-lift"
-                          onClick={() => sendMessage(prompt.text)}
-                          disabled={isLoading}
-                        >
-                          <prompt.icon className="h-5 w-5 mr-3 flex-shrink-0" />
-                          <div className="text-left">
-                            <div className="font-medium">{prompt.text}</div>
-                            <div className="text-xs text-muted-foreground">{prompt.category}</div>
-                          </div>
-                        </Button>
-                      ))}
+                    <div className="w-full overflow-x-auto pb-2">
+                      <div className="flex gap-3 min-w-[340px] md:grid md:grid-cols-2 md:gap-3 md:min-w-0">
+                        {quickPrompts.map((prompt, index) => (
+                          <Button
+                            key={index}
+                            variant="outline"
+                            className="justify-start p-4 h-auto hover-lift max-w-xs truncate whitespace-normal text-left flex-shrink-0 md:max-w-full"
+                            onClick={() => sendMessage(prompt.text)}
+                            disabled={isLoading}
+                          >
+                            <prompt.icon className="h-5 w-5 mr-3 flex-shrink-0" />
+                            <div className="text-left w-full">
+                              <div className="font-medium break-words line-clamp-3">{prompt.text}</div>
+                              <div className="text-xs text-muted-foreground">{prompt.category}</div>
+                            </div>
+                          </Button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 ) : (
@@ -473,7 +487,7 @@ const Chat = () => {
             <div className="p-4">
               <div className="flex gap-3 items-end">
                 <Input
-                  placeholder="Ask me anything about Class 10 Science..."
+                  placeholder="Ask me anything about JEE (Physics, Chemistry, Math)..."
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyPress={handleKeyPress}

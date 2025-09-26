@@ -1,7 +1,8 @@
-# 🧠 Smart AI Tutor (10th Science)
 
-An interactive learning platform for **10th-grade science students** built with modern web technologies.  
-Smart AI Tutor helps students learn through **AI-powered chat**, **quizzes**, **lectures**, **simulations**, **leaderboards**, and more.  
+# 🧠 Smart AI Tutor (JEE)
+
+An interactive learning platform for **JEE aspirants** built with modern web technologies.  
+Smart AI Tutor helps JEE aspirants master Physics, Chemistry, and Mathematics through **AI-powered chat**, **quizzes**, **lectures**, **simulations**, **leaderboards**, and more.  
 Built by **Code Storm ⚡**.
 
 ---
@@ -12,7 +13,7 @@ Built by **Code Storm ⚡**.
 - Clean introduction with **Start Journey** button.
 - Authentication using **Supabase Auth** (login/signup).
 
-### 📊 Dashboard
+### � Dashboard
 - Navbar, collapsible sidebar (burger menu), footer.
 - Tracks:
   - Daily streaks  
@@ -25,28 +26,28 @@ Built by **Code Storm ⚡**.
 ### 🤖 Smart Tutor (Chatbot)
 - Chatbot UI like **ChatGPT**.
 - History + “New Chat” option.
-- Smart recommendations like **Meta AI** but focused on **10th Science syllabus**.
+- Smart recommendations like **Meta AI** but focused on **JEE syllabus**.
 - Powered by **Groq API**.
 
 ### 📝 Quizzes
 - Auto-generated quizzes from **Open Trivia DB**.
 - Difficulty filters (easy/medium/hard).
 - Gamified UI design (exam-like with game feel).
+- JEE-level questions for Physics, Chemistry, and Mathematics.
 - Results stored in Supabase → contribute to **progress tracker** + **leaderboard**.
 
 ### 🔬 Simulations
-- Integrated **PhET simulations** (10th Science syllabus).
+- Integrated **PhET simulations** (JEE Physics & Chemistry topics).
 - Grid layout with “Launch” button.
 
 ### 🎥 Lectures
 - Embedded **YouTube lectures** via iframe (branding removed).
-- **YouTube Data API v3** integration for syllabus-specific search.
+- **YouTube Data API v3** integration for JEE-specific search.
 - UI inspired by **YouTube** (simplified & minimal).
 
 ### 📚 Notes
-- NCERT solutions (10th Science) in PDF format.
-- Embedded from:  
-  [📄 Polite Tanuki Netlify link](https://68cebbd7150fee3c8fb2afc4--polite-tanuki-fce128.netlify.app/).
+- JEE revision notes and formula sheets in PDF format.
+- Embedded from trusted sources.
 - Theme + color palette adjusted to match app design.
 
 ### 🏆 Leaderboard

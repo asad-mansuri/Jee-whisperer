@@ -11,15 +11,11 @@ const Welcome = () => {
   }, {
     icon: BookOpen,
     title: 'Interactive Quizzes',
-    description: 'Test your knowledge with engaging quizzes tailored to Class 10 Science.'
+  description: 'Test your knowledge with engaging quizzes tailored for JEE preparation.'
   }, {
     icon: Zap,
-    title: 'Live Simulations',
-    description: 'Explore physics and chemistry concepts through interactive PhET simulations.'
-  }, {
-    icon: Users,
-    title: 'Study Together',
-    description: 'Connect with classmates and learn together in our student community.'
+  title: 'Live Simulations',
+  description: 'Explore JEE Physics and Chemistry concepts through interactive PhET simulations.'
   }];
   return <div className="min-h-screen bg-gradient-hero">
       {/* Navigation */}
@@ -30,7 +26,7 @@ const Welcome = () => {
           </div>
           <div>
             <h1 className="text-2xl font-bold text-foreground">Smart AI Tutor</h1>
-            <p className="text-sm text-muted-foreground">Class 10 Science Made Easy</p>
+            <p className="text-sm text-muted-foreground">JEE Preparation Made Easy</p>
           </div>
         </div>
 
@@ -49,14 +45,13 @@ const Welcome = () => {
         <div className="max-w-4xl mx-auto animate-fade-in">
           <div className="mb-8">
             <h1 className="text-5xl md:text-6xl font-bold text-foreground mb-6 leading-tight">
-              Learn Class 10 Science
+              Crack JEE with Confidence
               <br />
               
             </h1>
             
             <p className="text-xl text-muted-foreground mb-8 leading-relaxed max-w-2xl mx-auto">
-              Master physics, chemistry, and biology with bite-sized lessons, interactive simulations, 
-              and your personal AI tutor. Get ready for your board exams with confidence.
+              Master Physics, Chemistry, and Math with concept clarity, interactive simulations, and your personal AI tutor. Get ready for JEE Main & Advanced with expert guidance.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
@@ -65,9 +60,15 @@ const Welcome = () => {
                 <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
               
-              <Button variant="outline" size="lg" onClick={() => setAuthModalOpen(true)} className="text-lg px-8 py-6 hover-lift bg-background/50 backdrop-blur-sm">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => window.open("https://youtu.be/xTpXC5CqGvA?si=X7jsw-WVaZSuijPV", "_blank")}
+                className="text-lg px-8 py-6 hover-lift bg-background/50 backdrop-blur-sm"
+              >
                 Watch Demo
               </Button>
+
             </div>
           </div>
         </div>
@@ -81,7 +82,7 @@ const Welcome = () => {
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             From AI-powered tutoring to interactive simulations, we've got all the tools 
-            to make learning science fun and effective.
+            to make JEE preparation effective and engaging.
           </p>
         </div>
 
@@ -109,7 +110,7 @@ const Welcome = () => {
             Ready to transform your learning?
           </h2>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Join thousands of students who are already acing their Class 10 Science exams with Smart AI Tutor.
+            Join thousands of aspirants who are already excelling in JEE preparation with Smart AI Tutor.
           </p>
           <Button size="lg" onClick={() => setAuthModalOpen(true)} className="bg-gradient-primary hover:opacity-90 transition-opacity shadow-soft text-lg px-8 py-6 hover-lift group">
             Start Learning Today
@@ -128,7 +129,7 @@ const Welcome = () => {
             <span className="text-xl font-bold text-foreground">Smart AI Tutor</span>
           </div>
           <p className="text-muted-foreground">
-            Empowering Class 10 students to excel in Science • Made By CODE STORM for learning
+            Empowering JEE aspirants to excel • Made By CODE STORM for learning
           </p>
         </div>
       </footer>

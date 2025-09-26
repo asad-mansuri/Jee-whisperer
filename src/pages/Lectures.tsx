@@ -7,7 +7,7 @@ declare global {
   }
 }
 
-const PLAYLIST_ID = 'PLVYgTYFS0AcZK_2MiQFFqPoqDOQz5ADrr';
+const PLAYLIST_ID = 'PLVYgTYFS0Aca3jm8IKRnewA-BzAdNLP0_';
 const YT_API_KEY = 'AIzaSyD8wSGi4aFT7-go-CzL0GpPUg2USnAAlMc';
 
 export default function Lectures() {
