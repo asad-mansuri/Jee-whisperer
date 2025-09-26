@@ -9,91 +9,90 @@ type Simulation = {
 };
 
 const SIMULATIONS: Simulation[] = [
-  // ... (keep the same simulations array you already have)
   {
-    title: "Balancing Chemical Equations",
-    description: "Practice balancing equations and explore conservation of mass.",
-    category: "Chemistry",
-    url: "https://phet.colorado.edu/sims/html/balancing-chemical-equations/latest/balancing-chemical-equations_en.html",
-    link: "https://phet.colorado.edu/en/simulation/balancing-chemical-equations",
+    "title": "Balancing Chemical Equations",
+    "description": "Practice balancing chemical equations using atoms and molecules (conservation of mass).",
+    "category": "Chemistry",
+    "url": "https://phet.colorado.edu/sims/html/balancing-chemical-equations/latest/balancing-chemical-equations_en.html",
+    "link": "https://phet.colorado.edu/en/simulation/balancing-chemical-equations"
   },
   {
-    title: "Acid-Base Solutions",
-    description: "Explore pH, probes, indicators, and solution behavior.",
-    category: "Chemistry",
-    url: "https://phet.colorado.edu/sims/html/acid-base-solutions/latest/acid-base-solutions_en.html",
-    link: "https://phet.colorado.edu/en/simulation/acid-base-solutions",
+    "title": "Acid-Base Solutions",
+    "description": "Explore pH, strong/weak acids & bases, indicators and how dilution affects pH.",
+    "category": "Chemistry",
+    "url": "https://phet.colorado.edu/sims/html/acid-base-solutions/latest/acid-base-solutions_en.html",
+    "link": "https://phet.colorado.edu/en/simulation/acid-base-solutions"
   },
   {
-    title: "pH Scale",
-    description: "Test everyday liquids and visualize how dilution changes pH.",
-    category: "Chemistry",
-    url: "https://phet.colorado.edu/sims/html/ph-scale/latest/ph-scale_en.html",
-    link: "https://phet.colorado.edu/en/simulation/ph-scale",
+    "title": "pH Scale",
+    "description": "Test everyday liquids and visualize how dilution changes pH scale.",
+    "category": "Chemistry",
+    "url": "https://phet.colorado.edu/sims/html/ph-scale/latest/ph-scale_en.html",
+    "link": "https://phet.colorado.edu/en/simulation/ph-scale"
   },
   {
-    title: "Build an Atom",
-    description: "Create atoms from protons, neutrons, electrons — see how element, mass, and charge change.",
-    category: "Chemistry / Atomic",
-    url: "https://phet.colorado.edu/sims/html/build-an-atom/latest/build-an-atom_all.html",
-    link: "https://phet.colorado.edu/en/simulation/build-an-atom",
+    "title": "Build an Atom",
+    "description": "Construct atoms by adding protons, neutrons & electrons; see how element, mass & charge change.",
+    "category": "Chemistry / Atomic Structure",
+    "url": "https://phet.colorado.edu/sims/html/build-an-atom/latest/build-an-atom_all.html",
+    "link": "https://phet.colorado.edu/en/simulation/build-an-atom"
   },
   {
-    title: "Build a Molecule",
-    description: "Assemble atoms into molecules and view 3D structures.",
-    category: "Chemistry / Molecules",
-    url: "https://phet.colorado.edu/sims/html/build-a-molecule/latest/build-a-molecule_all.html",
-    link: "https://phet.colorado.edu/en/simulation/build-a-molecule",
+    "title": "Build a Molecule",
+    "description": "Assemble atoms into molecules, examine molecular geometry and bonding.",
+    "category": "Chemistry / Molecular Structure",
+    "url": "https://phet.colorado.edu/sims/html/build-a-molecule/latest/build-a-molecule_all.html",
+    "link": "https://phet.colorado.edu/en/simulation/build-a-molecule"
   },
   {
-    title: "States of Matter: Basics",
-    description: "Heat, cool and compress particles — observe phase changes (solid/liquid/gas).",
-    category: "Physical Science",
-    url: "https://phet.colorado.edu/sims/html/states-of-matter-basics/latest/states-of-matter-basics_en.html",
-    link: "https://phet.colorado.edu/en/simulation/states-of-matter-basics",
+    "title": "Gas Properties",
+    "description": "Investigate pressure, volume, temperature relationships and kinetic molecular theory.",
+    "category": "Chemistry / Gases",
+    "url": "https://phet.colorado.edu/sims/html/gas-properties/latest/gas-properties_all.html",
+    "link": "https://phet.colorado.edu/en/simulation/gas-properties"
   },
   {
-    title: "Molarity",
-    description: "Explore concentration, moles, and how to prepare solutions of given molarity.",
-    category: "Chemistry",
-    url: "https://phet.colorado.edu/sims/html/molarity/latest/molarity_en.html",
-    link: "https://phet.colorado.edu/en/simulation/molarity",
+    "title": "Molarity",
+    "description": "Explore concentration, mole concept, and preparing solutions of given molarity.",
+    "category": "Chemistry",
+    "url": "https://phet.colorado.edu/sims/html/molarity/latest/molarity_en.html",
+    "link": "https://phet.colorado.edu/en/simulation/molarity"
   },
   {
-    title: "Circuit Construction Kit: DC",
-    description: "Build DC circuits with batteries, bulbs, resistors, ammeter/voltmeter and explore current/voltage.",
-    category: "Physics / Electricity",
-    url: "https://phet.colorado.edu/sims/html/circuit-construction-kit-dc/latest/circuit-construction-kit-dc_en.html",
-    link: "https://phet.colorado.edu/en/simulation/circuit-construction-kit-dc",
+    "title": "Circuit Construction Kit: DC",
+    "description": "Build DC circuits with batteries, resistors, bulbs; explore current, voltage and resistance.",
+    "category": "Physics / Electricity & Magnetism",
+    "url": "https://phet.colorado.edu/sims/html/circuit-construction-kit-dc/latest/circuit-construction-kit-dc_en.html",
+    "link": "https://phet.colorado.edu/en/simulation/circuit-construction-kit-dc"
   },
   {
-    title: "Forces & Motion: Basics",
-    description: "Investigate net force, friction, acceleration, and simple push/pull scenarios.",
-    category: "Physics / Mechanics",
-    url: "https://phet.colorado.edu/sims/html/forces-and-motion-basics/latest/forces-and-motion-basics_en.html",
-    link: "https://phet.colorado.edu/en/simulation/forces-and-motion-basics",
+    "title": "Forces & Motion: Basics",
+    "description": "Explore net force, friction, acceleration, and simple push / pull scenarios.",
+    "category": "Physics / Mechanics",
+    "url": "https://phet.colorado.edu/sims/html/forces-and-motion-basics/latest/forces-and-motion-basics_en.html",
+    "link": "https://phet.colorado.edu/en/simulation/forces-and-motion-basics"
   },
   {
-    title: "Natural Selection",
-    description: "Model how traits, selection agents, and environment affect population changes over time.",
-    category: "Biology",
-    url: "https://phet.colorado.edu/sims/html/natural-selection/latest/natural-selection_en.html",
-    link: "https://phet.colorado.edu/en/simulation/natural-selection",
+    "title": "Wave on a String",
+    "description": "Generate waves on a string, vary frequency & amplitude and study wave properties.",
+    "category": "Physics / Waves",
+    "url": "https://phet.colorado.edu/sims/html/wave-on-a-string/latest/wave-on-a-string_en.html",
+    "link": "https://phet.colorado.edu/en/simulation/wave-on-a-string"
   },
   {
-    title: "Wave on a String",
-    description: "Wiggle the end of a string and make waves, or adjust frequency and amplitude to see how it affects the wave pattern.",
-    category: "Physics / Waves",
-    url: "https://phet.colorado.edu/sims/html/wave-on-a-string/latest/wave-on-a-string_en.html",
-    link: "https://phet.colorado.edu/en/simulation/wave-on-a-string",
+    "title": "Projectile Motion",
+    "description": "Launch projectiles and explore motion under gravity, angle, speed, and air resistance.",
+    "category": "Physics / Mechanics",
+    "url": "https://phet.colorado.edu/sims/html/projectile-motion/latest/projectile-motion_en.html",
+    "link": "https://phet.colorado.edu/en/simulation/projectile-motion"
   },
   {
-    title: "Projectile Motion",
-    description: "Blast a cannon ball and explore projectile motion concepts including optimum angle, initial speed, and air resistance.",
-    category: "Physics / Mechanics",
-    url: "https://phet.colorado.edu/sims/html/projectile-motion/latest/projectile-motion_en.html",
-    link: "https://phet.colorado.edu/en/simulation/projectile-motion",
-  },
+    "title": "States of Matter: Basics",
+    "description": "Heat, cool and compress particles — observe phase changes among solid, liquid, gas.",
+    "category": "Physics / Thermodynamics / Physical Science",
+    "url": "https://phet.colorado.edu/sims/html/states-of-matter-basics/latest/states-of-matter-basics_en.html",
+    "link": "https://phet.colorado.edu/en/simulation/states-of-matter-basics"
+  }
 ];
 
 export default function Simulations(): JSX.Element {
