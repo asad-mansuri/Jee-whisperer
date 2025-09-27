@@ -83,24 +83,41 @@ Built by **Code Storm ⚡**.
 ## 📂 Project Structure
 
 ```bash
-smart-ai-tutor/
+science-whisperer/
 │
-├── frontend/                # React + Tailwind + Vite app
+├── frontend/                # React + Vite + TypeScript + Tailwind app (the website you open)
 │   ├── src/
-│   │   ├── components/      # UI components
-│   │   ├── pages/           # Page-level views (Dashboard, Tutor, etc.)
-│   │   ├── hooks/           # Custom hooks
-│   │   ├── utils/           # Helpers
-│   │   └── App.tsx
-│   └── public/              # Static assets (favicon, logos, etc.)
+│   │   ├── pages/           # Page files like PersonalChat.tsx, Dashboard, Profile — each is a full screen
+│   │   ├── components/      # Small reusable pieces: ChatList, MessageBubble, Header, Buttons
+│   │   ├── hooks/           # Reusable logic: useAuth, useToast, useSupabase (like tiny helpers)
+│   │   ├── lib/             # Third-party setup: supabase client, api helpers (connects to DB)
+│   │   ├── utils/           # Small helper functions (formatting dates, text, etc.)
+│   │   ├── styles/          # Tailwind config and global CSS (how things look)
+│   │   ├── assets/          # Images, icons, fonts (pictures and logos)
+│   │   ├── App.tsx          # App root (wires pages and routes together)
+│   │   └── main.tsx         # App entry (mounts App into the browser)
+│   ├── index.html           # Minimal HTML shell
+│   ├── package.json         # frontend dependencies and scripts (start, build)
+│   └── vite.config.ts       # Vite build/dev config
 │
-├── backend/                 # Node.js APIs
-│   ├── routes/              # Express routes
-│   ├── controllers/         # Business logic
-│   └── db/                  # Supabase integration
+├── backend/                 # Optional Node.js / serverless APIs (server logic)
+│   ├── routes/              # API route definitions
+│   ├── controllers/         # Business logic for each route (what the API does)
+│   ├── db/                  # Database helpers or migrations for server code
+│   └── package.json         # backend deps and scripts
 │
-├── supabase/                # DB schema, SQL policies, migrations
+├── supabase/                # Supabase project files: schema, SQL, policies, functions
+│   ├── migrations/          # SQL migrations (tables, columns)
+│   ├── functions/           # Database functions / edge functions
+│   └── seeds/               # Initial data to populate DB
 │
-├── docs/                    # Project docs
+├── scripts/                 # Helper scripts (migrate, seed, local dev helpers)
 │
-└── README.md
+├── tests/                   # Unit and integration tests (Jest, React Testing Library)
+│
+├── docs/                    # Project docs and how-to guides (setup, architecture)
+│
+├── .env                     # Environment variables (API keys) — keep private, not in git
+├── .gitignore               # Files to ignore in Git
+├── README.md                # Project overview and how to run it
+└── .vscode/                 # Optional editor settings (debug configs)
