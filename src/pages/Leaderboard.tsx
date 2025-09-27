@@ -118,21 +118,30 @@ export default function Leaderboard() {
         return at - bt;
       });
 
-      let lastVal: number | null = null;
-      let lastRank = 0;
+      let currentRank = 1;
+      let lastXpValue: number | null = null;
+      let sameRankCount = 0;
+      
       const enriched = sorted.map((row: any, idx: number) => {
         const val = row[metric] || 0;
-        if (lastVal === null || val !== lastVal) {
-          lastRank = idx + 1;
-          lastVal = val;
+        
+        if (lastXpValue === null || val !== lastXpValue) {
+          // New XP value, update rank
+          currentRank = idx + 1;
+          lastXpValue = val;
+          sameRankCount = 1;
+        } else {
+          // Same XP value, keep same rank but increment count
+          sameRankCount++;
         }
+        
         const prof = profilesById[row.user_id] || {};
         return {
           user_id: row.user_id,
           total_xp: row.total_xp || 0,
           weekly_xp: row.weekly_xp || 0,
           monthly_xp: row.monthly_xp || 0,
-          rank: lastRank,
+          rank: currentRank,
           display_name: prof.display_name || null,
           avatar_url: prof.avatar_url || null,
           class: prof.class || null,
