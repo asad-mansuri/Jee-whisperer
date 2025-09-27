@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -44,8 +44,6 @@ interface Profile {
   id: string;
   display_name: string | null;
   avatar_url?: string | null;
-  class: string | null;
-  section: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -75,18 +73,11 @@ export default function Profile() {
   const [displayName, setDisplayName] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const [userClass, setUserClass] = useState('');
-  const [section, setSection] = useState('');
 
 
-  useEffect(() => {
-    if (user) {
-      fetchProfile();
-      fetchConversations();
-    }
-  }, [user]);
+  
 
-  const fetchProfile = async () => {
+  const fetchProfile = useCallback(async () => {
     if (!user) return;
     
     try {
@@ -104,15 +95,11 @@ export default function Profile() {
         setProfile(data);
         setDisplayName(data.display_name || '');
         setAvatarUrl(data.avatar_url || '');
-        setUserClass(data.class || '');
-        setSection(data.section || '');
       } else {
         // Create profile if it doesn't exist
         const newProfile = {
           id: user.id,
           display_name: user.user_metadata?.display_name || user.email?.split('@')[0] || '',
-          class: '10',
-          section: null
         };
         
         const { data: createdProfile, error: createError } = await supabase
@@ -126,8 +113,6 @@ export default function Profile() {
         setProfile(createdProfile);
         setDisplayName(createdProfile.display_name || '');
         setAvatarUrl('');
-        setUserClass(createdProfile.class || '');
-        setSection(createdProfile.section || '');
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -139,9 +124,8 @@ export default function Profile() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const fetchConversations = async () => {
+  }, [user]);
+  const fetchConversations = useCallback(async () => {
     if (!user) return;
     
     try {
@@ -170,7 +154,14 @@ export default function Profile() {
         variant: "destructive",
       });
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchProfile();
+      fetchConversations();
+    }
+  }, [user, fetchProfile, fetchConversations]);
 
   const handleSaveProfile = async () => {
     if (!user || !profile) return;
@@ -182,8 +173,6 @@ export default function Profile() {
         .update({
           display_name: displayName,
           avatar_url: avatarUrl || null,
-          class: userClass,
-          section: section,
           updated_at: new Date().toISOString()
         })
         .eq('id', user.id);
@@ -371,27 +360,7 @@ export default function Profile() {
                     />
                   </div>
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="class">Class</Label>
-                    <Input
-                      id="class"
-                      value={userClass}
-                      onChange={(e) => setUserClass(e.target.value)}
-                      disabled={!editingProfile}
-                      placeholder="e.g., 10, 11, 12"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="section">Section</Label>
-                    <Input
-                      id="section"
-                      value={section}
-                      onChange={(e) => setSection(e.target.value)}
-                      disabled={!editingProfile}
-                      placeholder="e.g., A, B, C"
-                    />
-                  </div>
+
                 </div>
 
                 <div className="flex gap-3">
@@ -410,10 +379,8 @@ export default function Profile() {
                         variant="outline" 
                         onClick={() => {
                           setEditingProfile(false);
-                          setDisplayName(profile?.display_name || '');
+                        setDisplayName(profile?.display_name || '');
                         setAvatarUrl(profile?.avatar_url || '');
-                          setUserClass(profile?.class || '');
-                          setSection(profile?.section || '');
                         }}
                       >
                         <X className="h-4 w-4 mr-2" />

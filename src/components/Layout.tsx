@@ -5,6 +5,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { LogOut, Bell } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Link } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 interface LayoutProps {
   children: ReactNode;
 }
@@ -15,6 +17,7 @@ export const Layout = ({
     user,
     signOut
   } = useAuth();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   
   const [isMobile, setIsMobile] = useState(false);
 
@@ -28,6 +31,35 @@ export const Layout = ({
 
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
+
+  // Load avatar from profiles table (profile.avatar_url) if available
+  useEffect(() => {
+    if (!user) {
+      setAvatarUrl(null);
+      return;
+    }
+
+    let mounted = true;
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('avatar_url')
+          .eq('id', user.id)
+          .single();
+
+        if (error) throw error;
+        if (mounted) setAvatarUrl(data?.avatar_url || null);
+      } catch (err) {
+        // ignore - we'll fall back to user metadata
+        console.debug('Could not load profile avatar:', err);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [user]);
 
   return <SidebarProvider defaultOpen={!isMobile}>
       <div className="min-h-screen flex w-full bg-gradient-hero">
@@ -48,12 +80,14 @@ export const Layout = ({
               
               
               <div className="flex items-center gap-2">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={user?.user_metadata?.avatar_url} />
-                  <AvatarFallback className="bg-primary text-primary-foreground">
-                    {user?.user_metadata?.display_name?.[0] || user?.email?.[0]?.toUpperCase() || 'S'}
-                  </AvatarFallback>
-                </Avatar>
+                <Link to="/profile" aria-label="Profile">
+                  <Avatar className="h-8 w-8 hover:opacity-90 transition-opacity">
+                    <AvatarImage src={user?.user_metadata?.avatar_url} />
+                    <AvatarFallback className="bg-primary text-primary-foreground">
+                      {user?.user_metadata?.display_name?.[0] || user?.email?.[0]?.toUpperCase() || 'S'}
+                    </AvatarFallback>
+                  </Avatar>
+                </Link>
               </div>
 
               <Button variant="ghost" size="sm" onClick={signOut} className="hover-lift">
