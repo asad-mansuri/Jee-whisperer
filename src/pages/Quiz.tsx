@@ -24,20 +24,13 @@ interface QuizData {
   total: number;
 }
 
-const TOPICS = {
-  science: [
-    { id: 'general', name: 'General Science', icon: '🧪' },
-    { id: 'physics', name: 'Physics', icon: '⚡' },
-    { id: 'chemistry', name: 'Chemistry', icon: '🧪' },
-    { id: 'biology', name: 'Biology', icon: '🌱' },
-  ],
-  math: [
-    { id: 'general', name: 'General Math', icon: '📐' },
-    { id: 'algebra', name: 'Algebra', icon: '🔢' },
-    { id: 'geometry', name: 'Geometry', icon: '📐' },
-    { id: 'statistics', name: 'Statistics', icon: '📊' },
-  ]
-};
+
+const SUBJECTS = [
+  { id: 'physics', name: 'Physics', icon: '⚡' },
+  { id: 'chemistry', name: 'Chemistry', icon: '🧪' },
+  { id: 'maths', name: 'Maths', icon: '📐' },
+  { id: 'all', name: 'All', icon: '📚' },
+];
 
 const DIFFICULTIES = [
   { id: 'easy', name: 'Easy', color: 'bg-green-500', xp: 10 },
@@ -48,8 +41,7 @@ const DIFFICULTIES = [
 export default function Quiz() {
   const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState<'select' | 'quiz' | 'results'>('select');
-  const [selectedSubject, setSelectedSubject] = useState<'science' | 'math' | null>(null);
-  const [selectedTopic, setSelectedTopic] = useState<string>('');
+  const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('medium');
   const [quizData, setQuizData] = useState<QuizData | null>(null);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -68,23 +60,21 @@ export default function Quiz() {
     } else if (timeLeft === 0 && currentStep === 'quiz') {
       handleQuizComplete();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeLeft, currentStep]);
 
   const generateQuiz = async () => {
-    if (!selectedTopic || !selectedDifficulty) return;
-    
+    if (!selectedSubject || !selectedDifficulty) return;
     setLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('quiz-generator', {
         body: {
-          topic: selectedTopic,
+          subject: selectedSubject,
           difficulty: selectedDifficulty,
           amount: 10,
         },
       });
-
       if (error) throw error;
-
       setQuizData(data);
       setCurrentStep('quiz');
       setTimeLeft(300);
@@ -139,7 +129,7 @@ export default function Quiz() {
         .from('quiz_results')
         .insert({
           user_id: user.id,
-          topic: selectedTopic,
+          subject: selectedSubject,
           difficulty: selectedDifficulty,
           score: finalScore,
           total_questions: quizData.questions.length,
@@ -172,7 +162,6 @@ export default function Quiz() {
   const resetQuiz = () => {
     setCurrentStep('select');
     setSelectedSubject(null);
-    setSelectedTopic('');
     setSelectedDifficulty('medium');
     setQuizData(null);
     setCurrentQuestion(0);
@@ -194,7 +183,7 @@ export default function Quiz() {
       <div className="min-h-screen bg-gradient-hero p-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-foreground mb-2">Class 10 Quiz</h1>
+            <h1 className="text-4xl font-bold text-foreground mb-2">Jee exam Quiz</h1>
             <p className="text-muted-foreground">Test your knowledge and earn XP for the leaderboard!</p>
           </div>
 
@@ -207,50 +196,22 @@ export default function Quiz() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Button
-                  variant={selectedSubject === 'science' ? 'default' : 'outline'}
-                  className="h-20 text-lg hover-lift"
-                  onClick={() => setSelectedSubject('science')}
-                >
-                  <Beaker className="h-6 w-6 mr-2" />
-                  Science
-                </Button>
-                <Button
-                  variant={selectedSubject === 'math' ? 'default' : 'outline'}
-                  className="h-20 text-lg hover-lift"
-                  onClick={() => setSelectedSubject('math')}
-                >
-                  <Calculator className="h-6 w-6 mr-2" />
-                  Mathematics
-                </Button>
+                {SUBJECTS.map((subject) => (
+                  <Button
+                    key={subject.id}
+                    variant={selectedSubject === subject.id ? 'default' : 'outline'}
+                    className="h-20 text-lg hover-lift"
+                    onClick={() => setSelectedSubject(subject.id)}
+                  >
+                    <span className="mr-2">{subject.icon}</span>
+                    {subject.name}
+                  </Button>
+                ))}
               </div>
             </CardContent>
           </Card>
 
           {selectedSubject && (
-            <Card className="mb-6 bg-gradient-card shadow-card">
-              <CardHeader>
-                <CardTitle>Select Topic</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {TOPICS[selectedSubject].map((topic) => (
-                    <Button
-                      key={topic.id}
-                      variant={selectedTopic === topic.id ? 'default' : 'outline'}
-                      className="justify-start hover-lift"
-                      onClick={() => setSelectedTopic(topic.id)}
-                    >
-                      <span className="mr-2">{topic.icon}</span>
-                      {topic.name}
-                    </Button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {selectedTopic && (
             <Card className="mb-6 bg-gradient-card shadow-card">
               <CardHeader>
                 <CardTitle>Select Difficulty</CardTitle>
@@ -276,7 +237,7 @@ export default function Quiz() {
             </Card>
           )}
 
-          {selectedTopic && selectedDifficulty && (
+          {selectedSubject && selectedDifficulty && (
             <div className="text-center">
               <Card className="bg-gradient-card shadow-card mb-6">
                 <CardContent className="pt-6">
@@ -291,7 +252,7 @@ export default function Quiz() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Trophy className="h-4 w-4" />
-                      <span>Up to {DIFFICULTIES.find(d => d.id === selectedDifficulty)?.xp! * 10} XP</span>
+                      <span>Up to {(DIFFICULTIES.find(d => d.id === selectedDifficulty)?.xp || 15) * 10} XP</span>
                     </div>
                   </div>
                   <Button
@@ -428,10 +389,6 @@ export default function Quiz() {
                   <div>
                     <span className="text-muted-foreground">Difficulty:</span>
                     <span className="ml-2 font-medium capitalize">{selectedDifficulty}</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Topic:</span>
-                    <span className="ml-2 font-medium capitalize">{selectedTopic}</span>
                   </div>
                   <div>
                     <span className="text-muted-foreground">XP per question:</span>
