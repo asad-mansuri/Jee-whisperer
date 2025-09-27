@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { AuthModal } from '@/components/AuthModal';
-import { GraduationCap, Brain, Users, Trophy, ArrowRight, BookOpen, Zap } from 'lucide-react';
+import { GraduationCap, Brain, Users, Trophy, ArrowRight, BookOpen, Zap, Video } from 'lucide-react';
+import { title } from 'process';
 const Welcome = () => {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const features = [{
@@ -16,6 +17,10 @@ const Welcome = () => {
     icon: Zap,
   title: 'Live Simulations',
   description: 'Explore JEE Physics and Chemistry concepts through interactive PhET simulations.'
+  }, {
+    icon: Video,
+    title: 'Easy Lectures',
+    description: 'Learn Jee Concepts in easy way with detailed lectures without any distractions.'
   }];
   return <div className="min-h-screen bg-gradient-hero">
       {/* Navigation */}
