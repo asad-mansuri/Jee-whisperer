@@ -124,12 +124,12 @@ export default function Quiz() {
     setCorrectAnswers(correctCount);
 
     try {
-      // Save quiz result to database
-      const { error: quizError } = await supabase
+      // Save quiz result to database (use `topic` column, not `subject`)
+      const { data: insertData, error: quizError } = await supabase
         .from('quiz_results')
         .insert({
           user_id: user.id,
-          subject: selectedSubject,
+          topic: selectedSubject, // DB column is `topic`
           difficulty: selectedDifficulty,
           score: finalScore,
           total_questions: quizData.questions.length,
@@ -138,6 +138,8 @@ export default function Quiz() {
 
       if (quizError) {
         console.error('Error saving quiz result:', quizError);
+        // log any response data to help debugging
+        if (insertData) console.debug('Partial insert data:', insertData);
         throw quizError;
       }
 
