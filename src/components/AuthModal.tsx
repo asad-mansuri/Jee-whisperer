@@ -52,12 +52,10 @@ export const AuthModal = ({ open, onOpenChange }: AuthModalProps) => {
           title: mode === 'signin' ? 'Welcome back!' : 'Account created!',
           description: mode === 'signin' 
             ? 'Successfully signed in.' 
-            : 'Please check your email and click the confirmation link to verify your account.',
+            : 'Account created successfully! You can now sign in.',
         });
-        if (mode === 'signin') {
-          onOpenChange(false);
-          setFormData({ email: '', password: '', displayName: '' });
-        }
+        onOpenChange(false);
+        setFormData({ email: '', password: '', displayName: '' });
       }
     } catch (error) {
       toast({
