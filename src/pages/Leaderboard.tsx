@@ -507,7 +507,7 @@ export default function Leaderboard() {
                             >
                               {entry.rank}
                             </Badge>
-                            {getRankIcon(entry.rank)}
+                            
                           </div>
 
                           <Avatar className="h-10 w-10">
@@ -520,12 +520,8 @@ export default function Leaderboard() {
                           <div className="flex-1">
                             <div className="font-semibold flex items-center gap-2">
                               {entry.display_name || 'Anonymous'}
-                              {entry.user_id === user?.id && (
-                                <Badge variant="secondary" className="text-xs">You</Badge>
-                              )}
-                              {entry.rank <= 3 && (
-                                <Star className="h-4 w-4 text-yellow-500" />
-                              )}
+                              
+                              
                             </div>
                             {entry.class && entry.section && (
                               <div className="text-sm text-muted-foreground">

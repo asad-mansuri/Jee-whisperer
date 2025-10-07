@@ -293,8 +293,9 @@ export default function Lectures() {
       <div className="lectures-body">
         <div className="topbar">
           <div className="logo"><div className="mark">L</div> Lectures</div>
+          <br />
           <div className="search" style={{ flex: 1 }}>
-            <input id="yt-search" placeholder="Search lectures or YouTube" autoComplete="off" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+            <input id="yt-search" placeholder="Search" autoComplete="off" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
           </div>
         </div>
         <div className="search-results" id="searchResults" style={{ display: searchResults.length ? 'block' : 'none' }}>

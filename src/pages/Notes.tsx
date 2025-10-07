@@ -149,7 +149,7 @@ export default function Notes() {
                     <p className="text-sm text-muted-foreground m-0">Study Materials & Past Papers</p>
                   </div>
                 </div>
-
+                <br />
                 {/* Search Bar */}
                 <div className="flex-1 max-w-xl flex items-center gap-2">
                   <div className="relative flex-1">

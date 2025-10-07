@@ -134,7 +134,7 @@ const Welcome = () => {
             <span className="text-xl font-bold text-foreground">Smart AI Tutor</span>
           </div>
           <p className="text-muted-foreground">
-            Empowering JEE aspirants to excel • Made By CODE STORM for learning
+            Empowering JEE aspirants to excel • Made By Asad for learning
           </p>
         </div>
       </footer>

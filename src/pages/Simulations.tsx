@@ -159,7 +159,7 @@ export default function Simulations(): JSX.Element {
       {/* Navbar */}
       <header className={`sticky top-0 z-40 ${isDark ? "bg-[rgba(15,23,36,0.95)]/95" : "bg-white/80"} backdrop-blur-md border-b ${isDark ? "border-white/5" : "border-slate-200"}`}>
         <div className="max-w-6xl mx-auto flex items-center gap-6 px-4 py-3">
-          <h1 className="text-lg font-semibold tracking-tight">simulations</h1>
+          <h1 className="text-lg font-semibold tracking-tight">Simulations</h1>
 
           <div className="relative flex-1 max-w-xl">
             <svg className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 ${isDark ? "text-slate-400" : "text-slate-500"}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
@@ -169,7 +169,7 @@ export default function Simulations(): JSX.Element {
 
             <input
               className={`w-full pl-10 pr-10 py-2 rounded-lg ${isDark ? "bg-white/6 border border-white/6 placeholder:text-slate-400 focus:ring-sky-300" : "bg-white border border-slate-200 placeholder:text-slate-500 focus:ring-sky-300"} outline-none`}
-              placeholder="Search simulations by name, description, or category..."
+              placeholder="Search"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
