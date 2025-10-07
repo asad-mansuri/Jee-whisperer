@@ -19,6 +19,7 @@ import {
   Menu
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
@@ -264,9 +265,9 @@ const Chat = () => {
   }
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] gap-6">
+    <div className="flex h-[calc(100vh-8rem)] gap-3 md:gap-6 px-2 md:px-4 lg:px-6">
       {/* Conversations Sidebar - desktop */}
-      <Card className="w-80 bg-gradient-card shadow-card hidden lg:block">
+      <Card className="w-72 lg:w-80 bg-gradient-card shadow-card hidden lg:block">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">Conversations</CardTitle>
@@ -321,8 +322,8 @@ const Chat = () => {
 
       {/* Mobile Sidebar Sheet */}
       <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
-        <SheetContent side="left" className="w-80 p-0">
-          <SheetHeader className="p-4">
+        <SheetContent side="left" className="w-[280px] sm:w-80 p-0">
+          <SheetHeader className="p-3 sm:p-4">
             <SheetTitle>Conversations</SheetTitle>
           </SheetHeader>
           <div className="px-4 pb-4">
@@ -375,7 +376,7 @@ const Chat = () => {
         {currentConversation ? (
           <div className="flex flex-col h-full">
             <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
                 {/* Mobile toggle */}
                 <Button
                   variant="outline"
@@ -385,43 +386,57 @@ const Chat = () => {
                 >
                   <Menu className="h-5 w-5" />
                 </Button>
-                <Bot className="h-5 w-5 text-primary" />
-                JEE Tutor & Mentor
-                <Badge variant="secondary" className="ml-auto">JEE Advanced/ Mains</Badge>
+                <div className="flex items-center gap-2 min-w-0">
+                  <Bot className="h-5 w-5 text-primary flex-shrink-0" />
+                  <span className="truncate">JEE Tutor & Mentor</span>
+                </div>
+                <Badge variant="secondary" className="ml-auto hidden sm:inline-flex">JEE Advanced/ Mains</Badge>
+                <Badge variant="secondary" className="ml-auto sm:hidden">JEE</Badge>
               </CardTitle>
             </CardHeader>
 
             <Separator />
 
             {/* Messages Area */}
-            <ScrollArea className="flex-1 p-4">
-              <div className="space-y-4">
+            <ScrollArea className="flex-1 p-2 sm:p-4">
+              <div className="space-y-3 sm:space-y-4 max-w-3xl mx-auto">
                 {messages.length === 0 ? (
                   <div className="text-center py-8">
-                    <Bot className="h-16 w-16 mx-auto mb-4 text-primary" />
-                    <h3 className="text-xl font-semibold mb-2">Welcome to your JEE Tutor & Mentor!</h3>
-                    <p className="text-muted-foreground mb-6">
+                    <Bot className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-3 sm:mb-4 text-primary" />
+                    <h3 className="text-lg sm:text-xl font-semibold mb-2">Welcome to your JEE Tutor & Mentor!</h3>
+                    <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6 px-2 sm:px-4 max-w-2xl mx-auto">
                       I am your personal AI mentor for JEE Mains & Advanced. Ask me conceptual doubts, get step-by-step solutions, or request tips for Physics, Chemistry, and Maths at the JEE level.
                     </p>
                     
-                    <div className="w-full overflow-x-auto pb-2">
-                      <div className="flex gap-3 min-w-[340px] md:grid md:grid-cols-2 md:gap-3 md:min-w-0">
-                        {quickPrompts.map((prompt, index) => (
-                          <Button
-                            key={index}
-                            variant="outline"
-                            className="justify-start p-4 h-auto hover-lift max-w-xs truncate whitespace-normal text-left flex-shrink-0 md:max-w-full"
-                            onClick={() => sendMessage(prompt.text)}
-                            disabled={isLoading}
-                          >
-                            <prompt.icon className="h-5 w-5 mr-3 flex-shrink-0" />
-                            <div className="text-left w-full">
-                              <div className="font-medium break-words line-clamp-3">{prompt.text}</div>
-                              <div className="text-xs text-muted-foreground">{prompt.category}</div>
-                            </div>
-                          </Button>
-                        ))}
-                      </div>
+                    <div className="w-full">
+                      <Carousel
+                        opts={{
+                          align: "start",
+                          loop: true,
+                        }}
+                        className="w-full max-w-[90vw] sm:max-w-full mx-auto"
+                      >
+                        <CarouselContent className="-ml-2 md:-ml-4">
+                          {quickPrompts.map((prompt, index) => (
+                            <CarouselItem key={index} className="pl-2 md:pl-4 basis-[85%] sm:basis-[70%] md:basis-1/2 lg:basis-1/3">
+                              <Button
+                                variant="outline"
+                                className="w-full justify-start p-3 sm:p-4 h-auto hover-lift whitespace-normal text-left"
+                                onClick={() => sendMessage(prompt.text)}
+                                disabled={isLoading}
+                              >
+                                <prompt.icon className="h-5 w-5 mr-3 flex-shrink-0" />
+                                <div className="text-left w-full">
+                                  <div className="font-medium break-words line-clamp-3">{prompt.text}</div>
+                                  <div className="text-xs text-muted-foreground">{prompt.category}</div>
+                                </div>
+                              </Button>
+                            </CarouselItem>
+                          ))}
+                        </CarouselContent>
+                        <CarouselPrevious className="hidden md:flex" />
+                        <CarouselNext className="hidden md:flex" />
+                      </Carousel>
                     </div>
                   </div>
                 ) : (
@@ -434,29 +449,29 @@ const Chat = () => {
                         }`}
                       >
                         {message.sender === 'bot' && (
-                          <div className="bg-primary p-2 rounded-full">
-                            <Bot className="h-4 w-4 text-primary-foreground" />
+                          <div className="bg-primary p-1.5 sm:p-2 rounded-full flex-shrink-0">
+                            <Bot className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary-foreground" />
                           </div>
                         )}
                         
                         <div
-                          className={`max-w-[80%] p-4 rounded-lg ${
+                          className={`max-w-[85%] sm:max-w-[80%] p-2.5 sm:p-3 rounded-lg ${
                             message.sender === 'user'
                               ? 'bg-primary text-primary-foreground ml-auto'
                               : 'bg-muted'
                           }`}
                         >
-                          <div className="whitespace-pre-wrap text-sm leading-relaxed">
+                          <div className="whitespace-pre-wrap text-[13px] sm:text-sm leading-relaxed break-words">
                             {message.content}
                           </div>
-                          <div className="text-xs opacity-70 mt-2">
+                          <div className="text-[10px] sm:text-xs opacity-70 mt-1.5 sm:mt-2">
                             {message.timestamp.toLocaleTimeString()}
                           </div>
                         </div>
 
                         {message.sender === 'user' && (
-                          <div className="bg-muted p-2 rounded-full">
-                            <User className="h-4 w-4" />
+                          <div className="bg-muted p-1.5 sm:p-2 rounded-full flex-shrink-0">
+                            <User className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                           </div>
                         )}
                       </div>
@@ -484,10 +499,10 @@ const Chat = () => {
             <Separator />
 
             {/* Input Area */}
-            <div className="p-4">
-              <div className="flex gap-3 items-end">
+            <div className="p-2 sm:p-4">
+              <div className="flex gap-2 sm:gap-3 items-end">
                 <Input
-                  placeholder="Ask me anything about JEE (Physics, Chemistry, Math)..."
+                  placeholder="Ask me about JEE (Physics, Chemistry, Math)..."
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyPress={handleKeyPress}
