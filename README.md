@@ -120,4 +120,8 @@ science-whisperer/
 ├── .env                     # Environment variables (API keys) — keep private, not in git
 ├── .gitignore               # Files to ignore in Git
 ├── README.md                # Project overview and how to run it
+<<<<<<< HEAD
 └── .vscode/                 # Optional editor settings (debug configs)
+=======
+└── .vscode/                 # Optional editor settings (debug configs)
+>>>>>>> 2fe3085e1fb9e3b0cce4b3b329675979f31e3097

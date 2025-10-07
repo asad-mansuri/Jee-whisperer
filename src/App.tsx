@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { Layout } from "@/components/Layout";
-import { Loader2 } from "lucide-react";
+import { Loader as Loader2 } from "lucide-react";
 
 import Welcome from "./pages/Welcome";
 import Dashboard from "./pages/Dashboard";
@@ -75,17 +75,6 @@ const AppRoutes = () => {
         }
       />
       
-      <Route
-        path="/auth/callback"
-        element={
-          <div className="min-h-screen flex items-center justify-center bg-gradient-hero">
-            <div className="flex items-center gap-3">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              <span className="text-lg font-medium text-foreground">Completing sign in...</span>
-            </div>
-          </div>
-        }
-      />
       <Route
         path="/dashboard"
         element={
