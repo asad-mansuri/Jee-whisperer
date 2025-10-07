@@ -2,32 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-@import './styles/globals.css';
-
-@layer base {
-  * {
-    @apply break-words;
-  }
-}
-
-@layer utilities {
-  .text-wrap {
-    text-wrap: wrap;
-    overflow-wrap: break-word;
-    word-wrap: break-word;
-    word-break: break-word;
-    hyphens: auto;
-  }
-  
-  .truncate-text {
-    @apply truncate;
-  }
-  
-  .no-text-overflow {
-    @apply overflow-hidden text-ellipsis;
-  }
-}
-
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */
