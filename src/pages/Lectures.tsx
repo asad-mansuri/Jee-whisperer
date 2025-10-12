@@ -91,49 +91,55 @@ export default function Lectures() {
     setPlaylistIds(ids);
     const pl = playlistRef.current;
     if (!pl) return;
-    pl.innerHTML = '';
 
-    ids.forEach((id: string, idx: number) => {
-      const item = document.createElement('div');
-      item.className = 'plist-item';
-      if (idx === activeIndex) item.classList.add('active');
-      item.dataset.index = String(idx);
-      item.tabIndex = 0;
-      item.setAttribute('role', 'button');
-      item.setAttribute('aria-label', `Play Lecture ${idx + 1}`);
+    // Only rebuild if playlist is empty (optimization)
+    if (pl.children.length === 0) {
+      const fragment = document.createDocumentFragment();
+      
+      ids.forEach((id: string, idx: number) => {
+        const item = document.createElement('div');
+        item.className = 'plist-item';
+        if (idx === activeIndex) item.classList.add('active');
+        item.dataset.index = String(idx);
+        item.tabIndex = 0;
+        item.setAttribute('role', 'button');
+        item.setAttribute('aria-label', `Play Lecture ${idx + 1}`);
 
-      const thumb = document.createElement('div');
-      thumb.className = 'thumb';
-      thumb.style.backgroundImage = `url(https://i.ytimg.com/vi/${id}/hqdefault.jpg)`;
+        const thumb = document.createElement('div');
+        thumb.className = 'thumb';
+        thumb.style.backgroundImage = `url(https://i.ytimg.com/vi/${id}/hqdefault.jpg)`;
 
-      const meta = document.createElement('div');
-      meta.className = 'pmeta';
-      const title = document.createElement('h3');
-      title.textContent = 'Lecture ' + (idx + 1);
-      meta.appendChild(title);
-      item.appendChild(thumb);
-      item.appendChild(meta);
+        const meta = document.createElement('div');
+        meta.className = 'pmeta';
+        const title = document.createElement('h3');
+        title.textContent = 'Lecture ' + (idx + 1);
+        meta.appendChild(title);
+        item.appendChild(thumb);
+        item.appendChild(meta);
 
-      const playAtIndex = () => {
-        const targetIndex = parseInt(item.dataset.index || '0', 10);
-        cuePlaylistAt(targetIndex);
-        updateUrlHash(targetIndex);
-        scrollToTop();
-        
-        // Update active state
-        pl.querySelectorAll('.plist-item').forEach(el => el.classList.remove('active'));
-        item.classList.add('active');
-      };
-      item.addEventListener('click', playAtIndex);
-      item.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          playAtIndex();
-        }
+        const playAtIndex = () => {
+          const targetIndex = parseInt(item.dataset.index || '0', 10);
+          cuePlaylistAt(targetIndex);
+          updateUrlHash(targetIndex);
+          scrollToTop();
+          
+          // Update active state
+          pl.querySelectorAll('.plist-item').forEach(el => el.classList.remove('active'));
+          item.classList.add('active');
+        };
+        item.addEventListener('click', playAtIndex);
+        item.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            playAtIndex();
+          }
+        });
+
+        fragment.appendChild(item);
       });
-
-      pl.appendChild(item);
-    });
+      
+      pl.appendChild(fragment);
+    }
 
     updateCurrentInfo();
 

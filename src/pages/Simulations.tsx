@@ -204,31 +204,38 @@ export default function Simulations(): JSX.Element {
           {filtered.map((sim, idx) => (
             <article
               key={sim.title + idx}
-              className={`${cardBase} ${cardBg}`}
+              className={`${cardBase} ${cardBg} hover:scale-[1.02] transition-transform duration-200`}
             >
               <div className={`p-3 flex items-start justify-between ${isDark ? "" : ""}`}>
-                <div>
+                <div className="flex-1">
                   <h2 className={`text-sm font-semibold ${isDark ? "text-slate-100" : "text-slate-900"}`}>{sim.title}</h2>
                   <p className={`text-xs ${isDark ? "text-slate-400 mt-1" : "text-slate-600 mt-1"}`}>{sim.description}</p>
+                  <span className={`inline-block text-xs mt-2 px-2 py-1 rounded ${isDark ? "bg-sky-500/20 text-sky-300" : "bg-sky-100 text-sky-700"}`}>
+                    {sim.category}
+                  </span>
                 </div>
-                <div className={`text-right text-xs ${isDark ? "text-slate-400" : "text-slate-500"}`}>{sim.category}</div>
               </div>
 
-              <div className="flex-1 bg-black/80">
-                {/* iframe - note: many iframes may increase page weight. */}
-                <iframe title={`${sim.title} (PhET)`} src={sim.url} className="w-full h-full border-0" />
+              <div className={`flex-1 flex items-center justify-center ${isDark ? "bg-gradient-to-br from-sky-950/40 to-slate-900/60" : "bg-gradient-to-br from-sky-50 to-slate-100"}`}>
+                {/* Preview placeholder - no iframe to improve loading speed */}
+                <div className="text-center p-8">
+                  <svg className={`mx-auto mb-3 ${isDark ? "text-sky-400" : "text-sky-600"}`} width={48} height={48} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                    <circle cx="12" cy="12" r="4" />
+                  </svg>
+                  <p className={`text-sm ${isDark ? "text-slate-400" : "text-slate-600"}`}>Click Launch to start</p>
+                </div>
               </div>
 
-              <div className="p-3 flex items-center gap-2">
+              <div className="p-3">
                 <button
                   onClick={() => launchSim(sim)}
-                  className={`${isDark ? "ml-auto inline-flex items-center gap-2 px-3 py-2 rounded-md border border-sky-400/30 bg-sky-500/10 text-sky-300 font-semibold" : "ml-auto inline-flex items-center gap-2 px-3 py-2 rounded-md border border-sky-400/20 bg-sky-100 text-sky-700 font-semibold"}`}
+                  className={`w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-md font-semibold transition-all ${isDark ? "border border-sky-400/30 bg-sky-500/10 text-sky-300 hover:bg-sky-500/20" : "border border-sky-400/20 bg-sky-100 text-sky-700 hover:bg-sky-200"}`}
                 >
                   <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                    <path d="M5 12h14" />
-                    <path d="M12 5l7 7-7 7" />
+                    <polygon points="5 3 19 12 5 21 5 3" />
                   </svg>
-                  Launch
+                  Launch Simulation
                 </button>
               </div>
             </article>
