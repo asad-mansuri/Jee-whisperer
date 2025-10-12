@@ -310,13 +310,7 @@ export default function Quiz() {
               <CardTitle className="text-xl leading-relaxed">
                 {question.question}
               </CardTitle>
-              <div className="flex gap-2">
-                <Badge variant="outline" className="capitalize">{question.difficulty}</Badge>
-                <Badge variant="outline">{question.category}</Badge>
-                <Badge className={DIFFICULTIES.find(d => d.id === selectedDifficulty)?.color || 'bg-primary'}>
-                  {DIFFICULTIES.find(d => d.id === selectedDifficulty)?.xp || 15} XP per correct answer
-                </Badge>
-              </div>
+              
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -392,6 +386,7 @@ export default function Quiz() {
                     <span className="text-muted-foreground">Difficulty:</span>
                     <span className="ml-2 font-medium capitalize">{selectedDifficulty}</span>
                   </div>
+                  <br />
                   <div>
                     <span className="text-muted-foreground">XP per question:</span>
                     <span className="ml-2 font-medium">{difficultyInfo?.xp || 15}</span>
@@ -447,10 +442,11 @@ export default function Quiz() {
                 </div>
               </div>
 
-              <div className="flex gap-3">
+              <div className="flex gap-3, box-border">
                 <Button onClick={resetQuiz} className="flex-1 hover-lift">
                   Take Another Quiz
                 </Button>
+
                 <Button 
                   variant="outline" 
                   onClick={() => window.location.href = '/leaderboard'}

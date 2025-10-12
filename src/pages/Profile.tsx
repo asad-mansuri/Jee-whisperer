@@ -416,10 +416,10 @@ export default function Profile() {
                     {conversations.map((conversation) => (
                       <div
                         key={conversation.id}
-                        className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
+                        className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 bg-muted/50 rounded-lg hover:bg-muted transition-colors"
                       >
-                        <MessageSquare className="h-5 w-5 text-muted-foreground" />
-                        
+                        <MessageSquare className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+
                         <div className="flex-1 min-w-0">
                           {editingConversation === conversation.id ? (
                             <Input
@@ -434,14 +434,14 @@ export default function Profile() {
                               autoFocus
                             />
                           ) : (
-                            <div>
-                              <h3 className="font-medium truncate">{conversation.title}</h3>
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Badge variant="secondary" className="text-xs">
+                            <div className="min-w-0">
+                              <h3 className="font-medium truncate text-sm">{conversation.title}</h3>
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1 sm:mt-2 flex-wrap">
+                                <Badge variant="secondary" className="text-[10px] px-2 py-0.5">
                                   {conversation.message_count} messages
                                 </Badge>
-                                <span>•</span>
-                                <span>{new Date(conversation.updated_at).toLocaleDateString()}</span>
+                                <span className="hidden sm:inline">•</span>
+                                <span className="text-xs">{new Date(conversation.updated_at).toLocaleDateString()}</span>
                               </div>
                             </div>
                           )}
