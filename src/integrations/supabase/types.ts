@@ -81,6 +81,87 @@ export type Database = {
           },
         ]
       }
+      direct_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          updated_at: string
+          user_a: string
+          user_b: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_a: string
+          user_b: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_a?: string
+          user_b?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "direct_conversations_user_a_fkey"
+            columns: ["user_a"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "direct_conversations_user_b_fkey"
+            columns: ["user_b"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      direct_messages: {
+        Row: {
+          attachments: Json | null
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          sender_id: string
+        }
+        Insert: {
+          attachments?: Json | null
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          sender_id: string
+        }
+        Update: {
+          attachments?: Json | null
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "direct_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "direct_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "direct_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leaderboard: {
         Row: {
           monthly_xp: number | null
@@ -185,6 +266,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      personal_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          receiver_id: string
+          sender_id: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          receiver_id: string
+          sender_id: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          receiver_id?: string
+          sender_id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -368,9 +476,81 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      leaderboard_ranked_monthly: {
+        Row: {
+          avatar_url: string | null
+          class: string | null
+          display_name: string | null
+          monthly_xp: number | null
+          rank: number | null
+          rank_updated_at: string | null
+          section: string | null
+          total_xp: number | null
+          user_id: string | null
+          weekly_xp: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leaderboard_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leaderboard_ranked_total: {
+        Row: {
+          avatar_url: string | null
+          class: string | null
+          display_name: string | null
+          monthly_xp: number | null
+          rank: number | null
+          rank_updated_at: string | null
+          section: string | null
+          total_xp: number | null
+          user_id: string | null
+          weekly_xp: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leaderboard_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leaderboard_ranked_weekly: {
+        Row: {
+          avatar_url: string | null
+          class: string | null
+          display_name: string | null
+          monthly_xp: number | null
+          rank: number | null
+          rank_updated_at: string | null
+          section: string | null
+          total_xp: number | null
+          user_id: string | null
+          weekly_xp: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leaderboard_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
+      ensure_direct_conversation: {
+        Args: { user_a_id: string; user_b_id: string }
+        Returns: string
+      }
       reset_monthly_xp: {
         Args: Record<PropertyKey, never>
         Returns: undefined
