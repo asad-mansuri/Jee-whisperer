@@ -1,4 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Play, Search, Menu } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Skeleton } from '@/components/ui/skeleton';
 
 declare global {
   interface Window {
@@ -11,12 +16,14 @@ const PLAYLIST_ID = 'PLVYgTYFS0Aca3jm8IKRnewA-BzAdNLP0_';
 const YT_API_KEY = 'AIzaSyD8wSGi4aFT7-go-CzL0GpPUg2USnAAlMc';
 
 export default function Lectures() {
-  const [videoIdToTitle] = useState<Record<string, string>>({});
+  const [videoIdToTitle, setVideoIdToTitle] = useState<Record<string, string>>({});
   const [currentTitle, setCurrentTitle] = useState('Loading playlist...');
   const [currentIndex, setCurrentIndex] = useState('');
   const [playlistIds, setPlaylistIds] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Array<{ vid: string; title: string; channel: string; thumb: string }>>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeIndex, setActiveIndex] = useState(0);
   const playlistRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
 
@@ -66,6 +73,7 @@ export default function Lectures() {
     try {
       playerRef.current?.pauseVideo?.();
     } catch {}
+    setIsLoading(false);
     setTimeout(buildPlaylistUI, 600);
     fetchPlaylistMetadata();
   };
@@ -88,6 +96,7 @@ export default function Lectures() {
     ids.forEach((id: string, idx: number) => {
       const item = document.createElement('div');
       item.className = 'plist-item';
+      if (idx === activeIndex) item.classList.add('active');
       item.dataset.index = String(idx);
       item.tabIndex = 0;
       item.setAttribute('role', 'button');
@@ -110,6 +119,10 @@ export default function Lectures() {
         cuePlaylistAt(targetIndex);
         updateUrlHash(targetIndex);
         scrollToTop();
+        
+        // Update active state
+        pl.querySelectorAll('.plist-item').forEach(el => el.classList.remove('active'));
+        item.classList.add('active');
       };
       item.addEventListener('click', playAtIndex);
       item.addEventListener('keydown', (e) => {
@@ -140,21 +153,18 @@ export default function Lectures() {
     const fallback = id ? `Lecture ${index + 1}` : 'Lecture';
     const titleText = videoIdToTitle[id] || fallback;
     setCurrentTitle(titleText);
+    setActiveIndex(index);
 
     // highlight active
     const pl = playlistRef.current;
     if (pl) {
       Array.from(pl.querySelectorAll('.plist-item')).forEach((n, i) => {
-        const isActive = i === index;
-        (n as HTMLElement).style.opacity = isActive ? '1' : '0.75';
-        (n as HTMLElement).style.background = isActive ? 'rgba(255,255,255,0.04)' : 'transparent';
-        n.setAttribute('aria-current', isActive ? 'true' : 'false');
-        const h3 = n.querySelector('h3');
         const vid = ids[i];
+        const h3 = n.querySelector('h3');
         if (h3 && videoIdToTitle[vid]) h3.textContent = videoIdToTitle[vid];
       });
       const activeEl = pl.querySelector(`.plist-item[data-index="${index}"]`);
-      if (activeEl) (activeEl as HTMLElement).scrollIntoView({ block: 'nearest' });
+      if (activeEl) (activeEl as HTMLElement).scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
   };
 
@@ -201,9 +211,11 @@ export default function Lectures() {
       videosUrl.searchParams.set('id', ids.join(','));
       const vres = await fetch(videosUrl.toString());
       const vdata = await vres.json();
+      const newTitles: Record<string, string> = {};
       (vdata.items || []).forEach((v: any) => {
-        videoIdToTitle[v.id] = v.snippet?.title || '';
+        newTitles[v.id] = v.snippet?.title || '';
       });
+      setVideoIdToTitle(newTitles);
       updateCurrentInfo();
     } catch {}
   };
@@ -250,90 +262,248 @@ export default function Lectures() {
   }, [searchQuery]);
 
   return (
-    <div className="min-h-screen bg-gradient-hero p-4 md:p-6">
-      {/* Local styles adapted to global theme (uses .dark class) */}
-      <style>{`
-        :root{--bg:#f8fafc;--card:#ffffff;--muted:#475569;--accent:#ef4444;--text:#0b1220;--border:rgba(2,6,23,0.08)}
-        .dark{--bg:#0f0f10;--card:#0b0b0c;--muted:#bfc3c8;--accent:#ff0000;--text:#e6e6e6;--border:rgba(255,255,255,0.08)}
-        .lectures-body{color:var(--text);background:linear-gradient(180deg,var(--card) 0%, var(--bg) 100%)}
-        .topbar{height:64px;background:var(--card);display:flex;align-items:center;gap:16px;padding:0 16px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:20;backdrop-filter:saturate(120%) blur(6px)}
-        .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px}
-        .logo .mark{width:36px;height:36px;border-radius:6px;background:linear-gradient(90deg,#ff4d4d,#ff0000);display:inline-flex;align-items:center;justify-content:center;font-weight:800;box-shadow:0 6px 16px rgba(239,68,68,0.25)}
-        .container{display:grid;grid-template-columns:1fr 360px;gap:24px;padding:20px;max-width:1200px;margin:18px auto}
-        @media (min-width:1400px){.container{max-width:1400px;grid-template-columns:1.2fr 420px}}
-        .player-card{background:var(--card);border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6);padding:16px;display:flex;flex-direction:column;position:relative;z-index:1}
-        .player-wrap{position:relative;border-radius:10px;overflow:hidden;background:#000;aspect-ratio:16/9}
-        iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
-        .meta{display:flex;align-items:center;justify-content:space-between;padding-top:12px;gap:8px;flex-wrap:wrap}
-        .meta h1{font-size:18px;margin:0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-        .meta .row{display:flex;gap:10px;align-items:center;flex-shrink:0}
-        .playlist{}
-        .plist-item{display:flex;gap:10px;padding:10px;border-radius:8px;cursor:pointer;align-items:center}
-        .plist-item:hover{background:rgba(255,255,255,0.02)}
-        .plist-item:focus-visible{outline:2px solid rgba(255,255,255,0.12);outline-offset:2px}
-        .thumb{width:120px;height:67.5px;border-radius:6px;background:#111;background-size:cover;background-position:center;flex-shrink:0}
-        .pmeta{flex:1}
-        .pmeta h3{font-size:14px;margin:0 0 6px 0}
-        .search{position:relative;display:flex;align-items:center}
-        .search input{width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.03);color:inherit}
-        .search-results{position:absolute;left:0;right:0;top:64px;margin:0 auto;max-width:900px;padding:0 16px;z-index:30}
-        .results-panel{background:var(--card);border:1px solid var(--border);border-radius:10px;box-shadow:0 10px 30px rgba(2,6,23,0.35);overflow:hidden}
-        .result-item{display:flex;gap:10px;padding:10px;align-items:center;cursor:pointer}
-        .result-item:hover{background:rgba(255,255,255,0.04)}
-        .result-thumb{width:120px;height:67.5px;border-radius:6px;background:#111;background-size:cover;background-position:center;flex-shrink:0}
-        .result-meta h4{margin:0 0 4px 0;font-size:14px}
-        .result-meta small{color:var(--muted)}
-        @media (min-width:901px){.playlist{position:sticky;top:80px;max-height:calc(100vh - 120px);overflow:auto;padding-right:4px;z-index:0}}
-        @media (max-width:900px){.container{grid-template-columns:1fr}.playlist{order:2}}
-        @media (max-width:768px){.container{padding:16px;margin:12px auto}.meta h1{font-size:16px}.thumb{width:110px;height:61.9px}}
-        @media (max-width:600px){.container{padding:12px}.plist-item{gap:8px;padding:8px}.thumb{width:100px;height:56.25px}.pmeta h3{font-size:13px}.pmeta p{font-size:11px}.meta h1{white-space:normal}}
-        @media (max-width:420px){.thumb{width:96px;height:54px}.meta{flex-direction:column;align-items:flex-start;gap:6px}.meta h1{font-size:15px}}
-      `}</style>
+    <div className="min-h-screen bg-background">
+      {/* YouTube-like Header */}
+      <header className="sticky top-0 z-50 w-full border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/60">
+        <div className="flex h-16 items-center gap-4 px-4 md:px-6">
+          <Button variant="ghost" size="icon" className="md:hidden">
+            <Menu className="h-5 w-5" />
+          </Button>
+          
+          <div className="flex items-center gap-2 font-semibold text-lg">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-primary text-primary-foreground font-bold shadow-lg">
+              <Play className="h-5 w-5 fill-current" />
+            </div>
+            <span className="hidden sm:inline">JEE Lectures</span>
+          </div>
 
-      <div className="lectures-body">
-        <div className="topbar">
-          <div className="logo"><div className="mark">L</div> Lectures</div>
-          <br />
-          <div className="search" style={{ flex: 1 }}>
-            <input id="yt-search" placeholder="Search" autoComplete="off" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
+          <div className="flex-1 max-w-2xl mx-auto">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search lectures..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 bg-secondary border-border"
+              />
+            </div>
           </div>
         </div>
-        <div className="search-results" id="searchResults" style={{ display: searchResults.length ? 'block' : 'none' }}>
-          {searchResults.length > 0 && (
-            <div className="results-panel">
-              {searchResults.map((it) => (
-                <div key={it.vid} className="result-item" onClick={() => {
-                  try {
-                    playerRef.current?.loadVideoById?.(it.vid);
-                    setSearchQuery('');
-                    setSearchResults([]);
-                  } catch {}
-                }}>
-                  <div className="result-thumb" style={{ backgroundImage: `url('${it.thumb || `https://i.ytimg.com/vi/${it.vid}/mqdefault.jpg`}')` }} />
-                  <div className="result-meta">
-                    <h4>{it.title}</h4>
-                    <small>{it.channel}</small>
+      </header>
+
+      {/* Search Results Dropdown */}
+      {searchResults.length > 0 && (
+        <div className="fixed top-16 left-0 right-0 z-40 px-4 md:px-6 animate-fade-in">
+          <div className="max-w-2xl mx-auto mt-2">
+            <div className="bg-card border rounded-lg shadow-lg overflow-hidden">
+              <ScrollArea className="max-h-[60vh]">
+                {searchResults.map((result) => (
+                  <div
+                    key={result.vid}
+                    onClick={() => {
+                      try {
+                        playerRef.current?.loadVideoById?.(result.vid);
+                        setSearchQuery('');
+                        setSearchResults([]);
+                      } catch {}
+                    }}
+                    className="flex gap-3 p-3 hover:bg-accent/50 cursor-pointer transition-colors group"
+                  >
+                    <div className="relative w-40 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-muted">
+                      <img
+                        src={result.thumb || `https://i.ytimg.com/vi/${result.vid}/mqdefault.jpg`}
+                        alt={result.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Play className="h-8 w-8 text-white fill-white" />
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-medium text-sm line-clamp-2 mb-1">{result.title}</h4>
+                      <p className="text-xs text-muted-foreground">{result.channel}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </ScrollArea>
             </div>
-          )}
+          </div>
         </div>
+      )}
 
-        <main className="container">
-          <section className="player-card">
-            <div id="yt-player" className="player-wrap"></div>
-            <div className="meta">
-              <h1>{currentTitle}</h1>
-              <div className="row"><small>{currentIndex}</small></div>
+      {/* Main Content */}
+      <main className="container mx-auto px-4 md:px-6 py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] xl:grid-cols-[1fr_420px] gap-6">
+          {/* Video Player Section */}
+          <div className="space-y-4 animate-fade-in">
+            <div className="relative aspect-video bg-black rounded-xl overflow-hidden shadow-lg">
+              {isLoading && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Skeleton className="w-full h-full" />
+                </div>
+              )}
+              <div id="yt-player" className="w-full h-full"></div>
             </div>
-          </section>
+            
+            <div className="space-y-2">
+              <h1 className="text-xl md:text-2xl font-bold line-clamp-2">{currentTitle}</h1>
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <span className="font-medium">Video {currentIndex}</span>
+              </div>
+            </div>
+          </div>
 
-          <aside className="playlist" ref={playlistRef}></aside>
-        </main>
-      </div>
+          {/* Playlist Sidebar */}
+          <div className="lg:sticky lg:top-20 h-fit">
+            <div className="bg-card rounded-xl border shadow-card overflow-hidden">
+              <div className="p-4 border-b bg-muted/30">
+                <h2 className="font-semibold text-lg">Playlist</h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {playlistIds.length} videos
+                </p>
+              </div>
+              
+              <ScrollArea className="h-[calc(100vh-280px)] lg:h-[calc(100vh-200px)]">
+                <div ref={playlistRef} className="p-2 space-y-1">
+                  {isLoading ? (
+                    Array.from({ length: 5 }).map((_, i) => (
+                      <div key={i} className="flex gap-3 p-2">
+                        <Skeleton className="w-32 h-20 rounded-lg" />
+                        <div className="flex-1 space-y-2">
+                          <Skeleton className="h-4 w-full" />
+                          <Skeleton className="h-3 w-2/3" />
+                        </div>
+                      </div>
+                    ))
+                  ) : null}
+                </div>
+              </ScrollArea>
+            </div>
+          </div>
+        </div>
+      </main>
 
-      {/* Search handled via React; no inline script to avoid template parsing issues */}
+      <style>{`
+        .plist-item {
+          display: flex;
+          gap: 12px;
+          padding: 10px;
+          border-radius: 8px;
+          cursor: pointer;
+          align-items: center;
+          transition: all 0.2s ease;
+          position: relative;
+        }
+        
+        .plist-item:hover {
+          background: hsl(var(--accent) / 0.1);
+        }
+        
+        .plist-item.active {
+          background: hsl(var(--primary) / 0.1);
+          border-left: 3px solid hsl(var(--primary));
+        }
+        
+        .plist-item.active .thumb::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          border: 2px solid hsl(var(--primary));
+          border-radius: 8px;
+        }
+        
+        .plist-item:focus-visible {
+          outline: 2px solid hsl(var(--ring));
+          outline-offset: 2px;
+        }
+        
+        .thumb {
+          width: 128px;
+          height: 72px;
+          border-radius: 8px;
+          background: hsl(var(--muted));
+          background-size: cover;
+          background-position: center;
+          flex-shrink: 0;
+          position: relative;
+          overflow: hidden;
+          transition: transform 0.3s ease;
+        }
+        
+        .plist-item:hover .thumb {
+          transform: scale(1.05);
+        }
+        
+        .thumb::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(to top, rgba(0,0,0,0.3), transparent);
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+        
+        .plist-item:hover .thumb::before {
+          opacity: 1;
+        }
+        
+        .pmeta {
+          flex: 1;
+          min-width: 0;
+        }
+        
+        .pmeta h3 {
+          font-size: 14px;
+          margin: 0 0 4px 0;
+          font-weight: 500;
+          line-height: 1.4;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        
+        .plist-item.active .pmeta h3 {
+          color: hsl(var(--primary));
+          font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+          .thumb {
+            width: 112px;
+            height: 63px;
+          }
+          
+          .pmeta h3 {
+            font-size: 13px;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .thumb {
+            width: 100px;
+            height: 56px;
+          }
+          
+          .plist-item {
+            gap: 10px;
+            padding: 8px;
+          }
+          
+          .pmeta h3 {
+            font-size: 12px;
+          }
+        }
+
+        iframe {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          border: 0;
+        }
+      `}</style>
     </div>
   );
 }
