@@ -166,6 +166,15 @@ export default function Profile() {
   const handleSaveProfile = async () => {
     if (!user || !profile) return;
     
+    if (displayName.length > 5) {
+      toast({
+        title: "Error",
+        description: "Display name must be 5 characters or less.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setSaving(true);
     try {
       const { error } = await supabase
@@ -340,13 +349,14 @@ export default function Profile() {
                 {/* Profile Form */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="display-name">Display Name</Label>
+                    <Label htmlFor="display-name">Display Name (Max 5 chars)</Label>
                     <Input
                       id="display-name"
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
                       disabled={!editingProfile}
                       placeholder="Enter your display name"
+                      maxLength={5}
                     />
                   </div>
                   
